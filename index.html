@@ -21,7 +21,7 @@
     <div class="mission"><span class="mission-icon">◎</span><span><small>練習目標</small><strong id="missionText">從操場飛向泳健館</strong></span></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div class="hud"><div><small>高度</small><strong><span id="altitude">0.0</span><em> m</em></strong></div><i></i><div><small>速度</small><strong><span id="speed">0.0</span><em> m/s</em></strong></div><i></i><div><small>航向</small><strong><span id="heading">000</span><em>°</em></strong></div></div>
-    <div class="map-card"><div class="map-title"><span id="mapLabel">校園示意圖</span><span>北 ↑</span></div><canvas id="map" width="200" height="190" aria-label="位置示意圖"></canvas><div class="map-legend"><span class="dot drone-dot"></span>目前位置 <span id="targetLegend"><span class="dot target-dot"></span>館舍入口</span></div></div>
+    <div class="map-card"><div class="map-title"><span id="mapLabel">校園示意圖</span><span id="mapCompass">北 ↑</span></div><canvas id="map" width="200" height="190" aria-label="位置示意圖"></canvas><div class="map-legend"><span class="dot drone-dot"></span>目前位置 <span id="targetLegend"><span class="dot target-dot"></span>館舍入口</span></div></div>
     <div class="controls">
       <div class="control-block"><div class="stick-label"><b>左搖桿</b><span>升降 · 轉向</span></div><div id="leftStick" class="stick" aria-label="左搖桿：上下升降、左右旋轉" role="application"><span class="cross x"></span><span class="cross y"></span><span class="knob"></span></div><div class="stick-caption">上下升降　左右旋轉</div></div>
       <div class="control-block right"><div class="stick-label"><b>右搖桿</b><span>前後 · 平移</span></div><div id="rightStick" class="stick" aria-label="右搖桿：上下前後、左右平移" role="application"><span class="cross x"></span><span class="cross y"></span><span class="knob"></span></div><div class="stick-caption">上下前後　左右平移</div></div>
@@ -32,7 +32,7 @@
       <section class="welcome" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
         <div class="eyebrow"><span></span> FLIGHT PRACTICE · 入門模式</div>
         <h1 id="welcomeTitle">從操場起飛，<br>探索北教大。</h1>
-        <p>使用觸控、鍵盤或美國手手把在校園練習飛行，前往泳健館或體育館進行室內練習。</p>
+        <p>使用觸控、鍵盤或美國手手把練習飛行，可前往泳健館、體育館或學生活動中心進行室內練習。</p>
         <div class="guide"><div><b>左手</b><span>上下升降 · 左右旋轉</span></div><div><b>右手</b><span>前進後退 · 左右平移</span></div></div>
         <p class="keyboard-guide"><b>鍵盤：</b>W／S 升降，A／D 旋轉；方向鍵 ↑／↓ 前後、←／→ 左右平移。</p>
         <details class="controller-settings"><summary>外接手把設定</summary><p>連接手把後按一下手把按鈕，再啟用。預設為美國手；若方向或軸不符，可在此調整。</p><p id="gamepadStatus" role="status">尚未偵測到手把</p><p>移動搖桿，觀察下列軸數值變化，再為各動作選擇對應的軸。</p><p id="gamepadAxes">尚無軸資料</p><div id="axisSettings" class="axis-settings"></div><label class="pad-enable"><input id="gamepadEnable" type="checkbox"> 啟用手把操控</label><p>啟用或切換場景後，請先將四個軸移到中間，再開始飛行。標準遊戲手把可用 A 開始或進入館舍、B 返回戶外或關閉實景。</p></details>

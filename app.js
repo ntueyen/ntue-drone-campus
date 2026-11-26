@@ -18,7 +18,7 @@ const grass = material('#83a86c'), concrete = material('#c8c6af'), brick = mater
 function box(x,y,z,w,h,d,mat,group=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);o.position.set(x,y,z);group.add(o);return o;}
 function plane(x,z,w,d,mat,y=.05){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat);m.rotation.x=-Math.PI/2;m.position.set(x,y,z);scene.add(m);return m;}
 plane(0,0,500,500,grass,-.1);
-plane(0,20,380,280,material('#b6ba99'),-.04);
+plane(0,45,380,360,material('#b6ba99'),-.04);
 // The north-south athletics field and its running lanes are one lightweight canvas texture.
 const trackCanvas=document.createElement('canvas');trackCanvas.width=1024;trackCanvas.height=1536;const tc=trackCanvas.getContext('2d');
 const fieldTexture=new THREE.CanvasTexture(trackCanvas);fieldTexture.colorSpace=THREE.SRGBColorSpace;
@@ -115,10 +115,10 @@ function archedOpening(x,z,base,width,height,trim=facadeStone){
  const arch=new THREE.Mesh(new THREE.RingGeometry(r,r+.25,24,1,0,Math.PI),new THREE.MeshBasicMaterial({color:trim.color,side:THREE.DoubleSide}));arch.position.set(x,mid,z-.15);arch.rotation.y=Math.PI;scene.add(arch);
  box(x-r-.12,base+(height-r)/2,z-.15,.24,height-r,.22,trim);box(x+r+.12,base+(height-r)/2,z-.15,.24,height-r,.22,trim);
 }
-let scienceFront=frontage('科學館',-145,55,37,24,23,5,brickVariant('#e7aa97'));
-box(-145,4,scienceFront-.15,19,8,.35,material('#b96150'));
-for(const x of [-150,-145,-140])archedOpening(x,scienceFront-.45,0,x===-145?4.2:3.2,6,facadeStone);
-box(-145,8.4,scienceFront-.4,20,.55,.8,facadeStone);
+let scienceFront=frontage('科學館',-75,165,37,24,23,5,brickVariant('#e7aa97'));
+box(-75,4,scienceFront-.15,19,8,.35,material('#b96150'));
+for(const x of [-80,-75,-70])archedOpening(x,scienceFront-.45,0,x===-75?4.2:3.2,6,facadeStone);
+box(-75,8.4,scienceFront-.4,20,.55,.8,facadeStone);
 let audioFront=frontage('視聽館',-62,107,36,25,20,4,brickVariant('#efc2b2'));
 box(-62,3,audioFront-.25,14,6,.35,facadeStone);box(-62,2.7,audioFront-.5,8,5,.18,facadeDoor);
 for(const x of [-67,-62,-57])box(x,3,audioFront-.65,.35,6,.4,facadeFrame);
@@ -126,15 +126,15 @@ function entrancePhoto(x,z,width,height,path){box(x,height/2,z,width,height,.45,
 let libFront=frontage('圖書館',-17,108,41,25,28,6,brickVariant('#e5b5a6'));
 entrancePhoto(-17,libFront-.45,23,9,'./assets/library-entrance.jpg');
 box(-17,9.2,libFront-.55,24,.65,1,facadeStone);
-let duxingFront=frontage('篤行樓',45,109,42,27,30,6,brickVariant('#edc0b2'));
-entrancePhoto(45,duxingFront-.45,15,8,'./assets/duxing-entrance.jpg');
-let adminFront=frontage('行政大樓',99,108,40,25,30,6,brickVariant('#daa99d'));
-box(99,4.5,adminFront-.3,25,9,.65,facadeStone);archedOpening(99,adminFront-.7,0,15,7,facadeFrame);
-box(99,9.2,adminFront-.55,26,.6,1,facadeStone);
+let duxingFront=frontage('篤行樓',65,160,42,27,30,6,brickVariant('#edc0b2'));
+entrancePhoto(65,duxingFront-.45,15,8,'./assets/duxing-entrance.jpg');
+let adminFront=frontage('行政大樓',-17,165,40,25,30,6,brickVariant('#daa99d'));
+box(-17,4.5,adminFront-.3,25,9,.65,facadeStone);archedOpening(-17,adminFront-.7,0,15,7,facadeFrame);
+box(-17,9.2,adminFront-.55,26,.6,1,facadeStone);
 
 // Student Center: approximate red-brick wings, cream horizontal bands,
 // paired entrance columns and a glazed tower, based on the public tour.
-const studentX=-103,studentZ=81,studentW=30,studentD=25,studentH=25;
+const studentX=-150,studentZ=55,studentW=30,studentD=25,studentH=25;
 const studentBrick=material('#ac6457'),lightConcrete=material('#d7d1c0'),studentGlass=material('#8caeb6',{roughness:.42});
 box(studentX,studentH/2,studentZ,studentW,studentH,studentD,studentBrick);
 box(studentX,studentH+.35,studentZ,studentW+1,.7,studentD+1,lightConcrete);
@@ -156,6 +156,12 @@ const target={x:48,z:-72,r:12};const ring=new THREE.Mesh(new THREE.RingGeometry(
 const beacon=new THREE.Mesh(new THREE.TorusGeometry(2.7,.12,8,36),new THREE.MeshBasicMaterial({color:'#ffe69a'}));beacon.position.set(target.x,8,target.z);scene.add(beacon);label('泳健館入口',target.x,13,target.z);
 const gymTarget={x:-64,z:-42,r:10};const gymRing=new THREE.Mesh(new THREE.RingGeometry(5.5,6,64),new THREE.MeshBasicMaterial({color:'#f7d782',side:THREE.DoubleSide}));gymRing.rotation.x=-Math.PI/2;gymRing.position.set(gymTarget.x,.16,gymTarget.z);scene.add(gymRing);
 const gymBeacon=new THREE.Mesh(new THREE.TorusGeometry(2.7,.12,8,36),new THREE.MeshBasicMaterial({color:'#ffe69a'}));gymBeacon.position.set(gymTarget.x,8,gymTarget.z);scene.add(gymBeacon);label('體育館入口',gymTarget.x,13,gymTarget.z);
+const studentTarget={x:studentX+23,z:studentZ,r:9};const studentRing=new THREE.Mesh(new THREE.RingGeometry(5.5,6,64),new THREE.MeshBasicMaterial({color:'#f7d782',side:THREE.DoubleSide}));studentRing.rotation.x=-Math.PI/2;studentRing.position.set(studentTarget.x,.16,studentTarget.z);scene.add(studentRing);
+const studentBeacon=new THREE.Mesh(new THREE.TorusGeometry(2.7,.12,8,36),new THREE.MeshBasicMaterial({color:'#ffe69a'}));studentBeacon.position.set(studentTarget.x,8,studentTarget.z);scene.add(studentBeacon);label('學生活動中心入口',studentTarget.x,13,studentTarget.z);
+// The university map puts north at the bottom. Rotate the outdoor model as a
+// unit so that north is up on our map and headings follow compass convention.
+const campusRoot=new THREE.Group();for(const object of [...scene.children])campusRoot.add(object);scene.add(campusRoot);campusRoot.rotation.y=Math.PI;
+for(const b of obstacles){b.x=-b.x;b.z=-b.z}for(const point of [target,gymTarget,studentTarget]){point.x=-point.x;point.z=-point.z}
 const drone=new THREE.Group();scene.add(drone);
 const bodyMat=material('#e6ede2'), darkMat=material('#223e43'), propMat=material('#273b41');
 box(0,0,0,3.3,.8,3.5,bodyMat,drone);box(0,-.15,-1.3,1.2,.55,.7,darkMat,drone);
@@ -222,11 +228,33 @@ for(const side of [-1,1]){
 }
 for(let z=-36;z<=36;z+=6){box(0,17.5,z,49,.35,.45,gymSteel,gymIndoor);for(let x=-18;x<=18;x+=9)box(x,17.1,z,2.5,.14,1,material('#f5ead0'),gymIndoor)}
 for(const z of [-32,32]){box(0,6,z,7,4,.18,material('#e9eddf'),gymIndoor);box(0,4.25,z+(z<0?1:-1),3.5,.15,.3,material('#b85b43'),gymIndoor)}
+// Student Center entrance-hall flight area: a conceptual interior using the
+// entrance columns, brick bands, glass and stairs visible in the campus tour.
+const studentIndoor=new THREE.Scene();studentIndoor.background=new THREE.Color('#dce5df');
+studentIndoor.add(new THREE.HemisphereLight('#fff7e6','#aaaba0',2));
+const studentSun=new THREE.DirectionalLight('#fff5e1',1.1);studentSun.position.set(-8,22,16);studentIndoor.add(studentSun);
+box(0,-.3,0,50,.5,82,new THREE.MeshStandardMaterial({map:tileTex,roughness:1}),studentIndoor);
+const lobbyWall=material('#dfd8c7'),lobbyBrick=material('#ab6c60'),lobbyGlass=material('#93b7ba',{roughness:.35}),lobbyDark=material('#657a79');
+box(-25,9,0,.8,18,82,lobbyWall,studentIndoor);box(25,9,0,.8,18,82,lobbyWall,studentIndoor);box(0,9,-41,50,18,.8,lobbyWall,studentIndoor);box(0,9,41,50,18,.8,lobbyWall,studentIndoor);
+box(0,18.3,0,50,.6,82,material('#ddd6c8'),studentIndoor);
+for(const side of [-1,1]){
+ box(side*24.5,5,0,.2,5,80,lobbyBrick,studentIndoor);box(side*24.3,9.2,0,1.5,.5,80,lobbyWall,studentIndoor);
+ for(let z=-32;z<=32;z+=8){box(side*24.35,13,z,.2,5,6,lobbyGlass,studentIndoor);box(side*23.7,10,z,.2,1.4,.2,lobbyDark,studentIndoor)}
+}
+for(let z=-34;z<=34;z+=8){box(0,17.5,z,48,.4,.5,lobbyWall,studentIndoor);for(let x=-18;x<=18;x+=9)box(x,17,z,4,.15,1.4,material('#f5f0dc'),studentIndoor)}
+const studentPillars=[];
+for(const x of [-15,15])for(const z of [-18,0,18]){const pillar=new THREE.Mesh(new THREE.CylinderGeometry(1,1.1,16,16),lobbyWall);pillar.position.set(x,8,z);studentIndoor.add(pillar);studentPillars.push({x,z,r:2.2})}
+box(0,5,-40.4,25,8,.3,lobbyGlass,studentIndoor);for(const x of [-12,-6,0,6,12])box(x,5,-40,.3,8,.35,lobbyDark,studentIndoor);
+box(0,12,-40,28,2,.4,lobbyBrick,studentIndoor);
+// A short staircase and raised gallery remain at the side of the open route.
+for(let i=0;i<8;i++)box(-21,.3+i*.36,-27+i*1.7,6,.6,1.7,facadeStone,studentIndoor);
+box(-22,3.4,-6,5,.4,34,lobbyWall,studentIndoor);box(-19.5,4.3,-6,.12,.12,34,lobbyDark,studentIndoor);
 // Scene-specific bounds keep the drone and follow camera inside the hall.
 // Scene-specific bounds keep the drone and follow camera inside the hall.
 const indoorStart={x:0,y:4.5,z:23,yaw:0};
 const gymStart={x:0,y:5,z:22,yaw:0};
-const start={x:0,y:5,z:38,yaw:0};const state={...start,vx:0,vy:0,vz:0,view:'chase',paused:true,pano:false,world:'outdoor'};
+const studentStart={x:0,y:4.5,z:23,yaw:0};
+const start={x:0,y:5,z:-38,yaw:Math.PI};const state={...start,vx:0,vy:0,vz:0,view:'chase',paused:true,pano:false,world:'outdoor'};
 let outdoorPosition=null;
 const sticks={left:{x:0,y:0},right:{x:0,y:0}};let lastToast=0,toastTimer;
 const keys=new Set(),padConfig={enabled:false,axes:[...defaultAxes],reverse:[false,false,false,false]};let padReady=false,padIdentity=null,lastAxisUpdate=0,padButtons=[false,false];
@@ -268,7 +296,7 @@ function setupStick(id,value){const el=$(id),knob=el.querySelector('.knob');let 
   el.addEventListener('pointerup',release);el.addEventListener('pointercancel',release);el.addEventListener('lostpointercapture',release);return release}
 const releaseLeft=setupStick('leftStick',sticks.left),releaseRight=setupStick('rightStick',sticks.right);
 function clearControls(){releaseLeft();releaseRight();keys.clear();padReady=false;state.vx=state.vy=state.vz=0}
-function reset(){const home=state.world==='indoor'?indoorStart:state.world==='gym'?gymStart:start;Object.assign(state,home,{vx:0,vy:0,vz:0});clearControls();camera.position.set(home.x,home.y+5,home.z+5);toast(state.world==='indoor'?'已回到泳健館起飛點':state.world==='gym'?'已回到體育館起飛點':'已回到操場起飛點')}
+function reset(){const home=state.world==='indoor'?indoorStart:state.world==='gym'?gymStart:state.world==='student'?studentStart:start;Object.assign(state,home,{vx:0,vy:0,vz:0});clearControls();camera.position.set(home.x-Math.sin(home.yaw)*5,home.y+5,home.z+Math.cos(home.yaw)*5);toast(state.world==='indoor'?'已回到泳健館起飛點':state.world==='gym'?'已回到體育館起飛點':state.world==='student'?'已回到活動中心起飛點':'已回到操場起飛點')}
 $('resetButton').onclick=reset;
 $('viewButton').onclick=()=>{state.view=state.view==='chase'?'fpv':'chase';$('viewButton').textContent=state.view==='chase'?'第一人稱':'第三人稱';toast(state.view==='chase'?'第三人稱視角':'第一人稱視角')};
 $('startButton').onclick=()=>{$('overlay').classList.add('hidden');state.paused=false};
@@ -278,12 +306,12 @@ window.addEventListener('blur',()=>{if(!state.paused&&!state.pano){clearControls
 function blocked(x,y,z){return obstacles.some(b=>y<b.h+1.5&&Math.abs(x-b.x)<b.w/2+1.5&&Math.abs(z-b.z)<b.d/2+1.5)}
 const map=$('map').getContext('2d');
 function drawMap(){map.clearRect(0,0,200,190);map.fillStyle='#3b655e';map.fillRect(0,0,200,190);
- if(state.world!=='outdoor'){map.fillStyle='#d0d9cc';map.fillRect(42,12,116,166);map.fillStyle=state.world==='gym'?'#c88f5b':'#428fb0';map.fillRect(75,42,50,106);map.strokeStyle='#dbf2f5';if(state.world==='indoor'){for(let x=83;x<125;x+=8){map.beginPath();map.moveTo(x,42);map.lineTo(x,148);map.stroke()}}else{map.strokeRect(80,47,40,96);map.beginPath();map.moveTo(80,95);map.lineTo(120,95);map.arc(100,95,9,0,Math.PI*2);map.stroke()}let x=100+state.x*2.2,z=95+state.z*2;map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore();return}
- const scale=.57,p=(x,z)=>[100+x*scale,84+z*scale];
-  let [fx,fz]=p(-8,0);map.fillStyle='#bd755d';map.beginPath();map.roundRect(fx-24,fz-38,48,76,24);map.fill();map.fillStyle='#87a670';map.beginPath();map.roundRect(fx-17,fz-31,34,62,17);map.fill();
+ if(state.world!=='outdoor'){map.fillStyle='#d0d9cc';map.fillRect(42,12,116,166);map.fillStyle=state.world==='gym'?'#c88f5b':state.world==='student'?'#d5bd9c':'#428fb0';map.fillRect(75,42,50,106);map.strokeStyle='#dbf2f5';if(state.world==='indoor'){for(let x=83;x<125;x+=8){map.beginPath();map.moveTo(x,42);map.lineTo(x,148);map.stroke()}}else if(state.world==='gym'){map.strokeRect(80,47,40,96);map.beginPath();map.moveTo(80,95);map.lineTo(120,95);map.arc(100,95,9,0,Math.PI*2);map.stroke()}else{map.fillStyle='#98756b';for(const pillar of studentPillars){map.beginPath();map.arc(100+pillar.x*2.2,95+pillar.z*2,3,0,Math.PI*2);map.fill()}}let x=100+state.x*2.2,z=95+state.z*2;map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore();return}
+ const scale=.43,p=(x,z)=>[100+x*scale,104+z*scale];
+  let [fx,fz]=p(8,0);map.fillStyle='#bd755d';map.beginPath();map.roundRect(fx-18,fz-29,36,58,18);map.fill();map.fillStyle='#87a670';map.beginPath();map.roundRect(fx-13,fz-24,26,48,13);map.fill();
   map.fillStyle='#a9b9a4';for(const b of obstacles){let[x,z]=p(b.x,b.z);map.fillRect(x-b.w*scale/2,z-b.d*scale/2,b.w*scale,b.d*scale)}
-  for(const point of [target,gymTarget]){let [tx,tz]=p(point.x,point.z);map.fillStyle='#ffcd79';map.beginPath();map.arc(tx,tz,5,0,7);map.fill()}let [x,z]=p(state.x,state.z);map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore()}
-let last=performance.now();const look=new THREE.Vector3(),cameraGoal=new THREE.Vector3();
+  for(const point of [target,gymTarget,studentTarget]){let [tx,tz]=p(point.x,point.z);map.fillStyle='#ffcd79';map.beginPath();map.arc(tx,tz,4,0,7);map.fill()}let [x,z]=p(state.x,state.z);map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore()}
+let last=performance.now();const look=new THREE.Vector3(),cameraGoal=new THREE.Vector3(),tagWorldPosition=new THREE.Vector3();
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;
  const controls=combineInputs(sticks,keyboardValues(),padValues());
  if(!state.paused&&!state.pano){state.yaw+=controls.left.x*1.1*dt;
@@ -293,21 +321,22 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/10
    const blend=1-Math.exp(-5*dt);state.vx+=(vx-state.vx)*blend;state.vy+=(vy-state.vy)*blend;state.vz+=(vz-state.vz)*blend;
    let rawX=state.x+state.vx*dt,rawZ=state.z+state.vz*dt;
    const rawY=state.y+state.vy*dt;
-   let nx=THREE.MathUtils.clamp(rawX,indoorMode?-21:-175,indoorMode?21:165),nz=THREE.MathUtils.clamp(rawZ,indoorMode?-37:-115,indoorMode?37:155),ny=THREE.MathUtils.clamp(rawY,2,indoorMode?15.5:38);
+   let nx=THREE.MathUtils.clamp(rawX,indoorMode?-21:-165,indoorMode?21:175),nz=THREE.MathUtils.clamp(rawZ,indoorMode?-37:-225,indoorMode?37:115),ny=THREE.MathUtils.clamp(rawY,2,indoorMode?15.5:38);
    if((nx!==rawX||nz!==rawZ||(indoorMode&&ny!==rawY))&&now-lastToast>2000){toast(indoorMode?'已接近館內牆壁、地面或屋頂':'已到達本次練習範圍邊界');lastToast=now}
-   if(indoorMode||!blocked(nx,ny,nz)){state.x=nx;state.z=nz;state.y=ny}else{state.vx=state.vz=0;if(now-lastToast>2000){toast('接近建築，請調整方向或高度');lastToast=now}}
+   const hitPillar=state.world==='student'&&studentPillars.some(p=>Math.hypot(nx-p.x,nz-p.z)<p.r);
+   if(!hitPillar&&(indoorMode||!blocked(nx,ny,nz))){state.x=nx;state.z=nz;state.y=ny}else{state.vx=state.vz=0;if(now-lastToast>2000){toast(hitPillar?'接近大廳柱子，請調整方向':'接近建築，請調整方向或高度');lastToast=now}}
  }
  drone.position.set(state.x,state.y,state.z);drone.rotation.y=-state.yaw;drone.visible=state.view==='chase';
  const forward=new THREE.Vector3(Math.sin(state.yaw),0,-Math.cos(state.yaw));
  if(state.view==='chase'){const indoors=state.world!=='outdoor';cameraGoal.set(state.x-forward.x*13,state.y+(indoors?7:5.5),state.z-forward.z*13);look.set(state.x+forward.x*8,state.y+(indoors?0:4.5),state.z+forward.z*8)}else{cameraGoal.set(state.x+forward.x*1.7,state.y+.6,state.z+forward.z*1.7);look.set(state.x+forward.x*30,state.y-1,state.z+forward.z*30)}
  if(state.world!=='outdoor'){cameraGoal.x=THREE.MathUtils.clamp(cameraGoal.x,-23,23);cameraGoal.y=THREE.MathUtils.clamp(cameraGoal.y,1.5,17);cameraGoal.z=THREE.MathUtils.clamp(cameraGoal.z,-39,39)}
- camera.position.lerp(cameraGoal,1-Math.exp(-5*dt));camera.lookAt(look);for(const tag of labels){const width=THREE.MathUtils.clamp(camera.position.distanceTo(tag.position)*.15,3,20);tag.scale.set(width,width/4,1)}renderer.render(state.world==='indoor'?indoor:state.world==='gym'?gymIndoor:scene,camera);
- const nearPool=state.world==='outdoor'&&Math.hypot(state.x-target.x,state.z-target.z)<target.r,nearGym=state.world==='outdoor'&&Math.hypot(state.x-gymTarget.x,state.z-gymTarget.z)<gymTarget.r;
- $('visitButton').classList.toggle('hidden',!(nearPool||nearGym)||state.pano||state.paused);$('visitButton').textContent=nearGym?'進入體育館飛行練習':'進入泳健館飛行練習';
- $('missionText').textContent=state.world==='indoor'?'泳健館室內飛行練習':state.world==='gym'?'體育館室內飛行練習':nearGym?'已抵達體育館入口':nearPool?'已抵達泳健館入口':'探索操場與館舍';
+ camera.position.lerp(cameraGoal,1-Math.exp(-5*dt));camera.lookAt(look);for(const tag of labels){tag.getWorldPosition(tagWorldPosition);const width=THREE.MathUtils.clamp(camera.position.distanceTo(tagWorldPosition)*.15,3,20);tag.scale.set(width,width/4,1)}renderer.render(state.world==='indoor'?indoor:state.world==='gym'?gymIndoor:state.world==='student'?studentIndoor:scene,camera);
+ const nearPool=state.world==='outdoor'&&Math.hypot(state.x-target.x,state.z-target.z)<target.r,nearGym=state.world==='outdoor'&&Math.hypot(state.x-gymTarget.x,state.z-gymTarget.z)<gymTarget.r,nearStudent=state.world==='outdoor'&&Math.hypot(state.x-studentTarget.x,state.z-studentTarget.z)<studentTarget.r;
+ $('visitButton').classList.toggle('hidden',!(nearPool||nearGym||nearStudent)||state.pano||state.paused);$('visitButton').textContent=nearStudent?'進入學生活動中心飛行練習':nearGym?'進入體育館飛行練習':'進入泳健館飛行練習';
+ $('missionText').textContent=state.world==='indoor'?'泳健館室內飛行練習':state.world==='gym'?'體育館室內飛行練習':state.world==='student'?'活動中心大廳飛行練習':nearStudent?'已抵達活動中心入口':nearGym?'已抵達體育館入口':nearPool?'已抵達泳健館入口':'探索操場與館舍';
  $('altitude').textContent=state.y.toFixed(1);$('speed').textContent=Math.hypot(state.vx,state.vy,state.vz).toFixed(1);$('heading').textContent=String(Math.round(((state.yaw*180/Math.PI)%360+360)%360)).padStart(3,'0');drawMap();
 }
-camera.position.set(0,13,54);requestAnimationFrame(frame);
+camera.position.set(0,13,-54);requestAnimationFrame(frame);
 
 // A separate renderer is created lazily so the high-resolution panorama is loaded only on demand.
 let panoRenderer,panoCamera,panoScene,panoSphere,panoYaw=0,panoPitch=0,panoDrag=null,panoRenderId;const panoTextures={};
@@ -320,8 +349,8 @@ function openPano(){clearControls();state.pano=true;const world=state.world;cons
  if(panoTextures[world])show(panoTextures[world]);else{panoSphere.material.map=null;panoSphere.material.color.set('#122c34');panoSphere.material.needsUpdate=true;
   new THREE.TextureLoader().load(gym?'./assets/gym-pano.jpg':'./assets/pool.jpg',texture=>{texture.colorSpace=THREE.SRGBColorSpace;const max=panoRenderer.capabilities.maxTextureSize;if(texture.image.width>max){const c=document.createElement('canvas');c.width=max;c.height=Math.floor(max/2);c.getContext('2d').drawImage(texture.image,0,0,c.width,c.height);texture.image=c;texture.needsUpdate=true}panoTextures[world]=texture;show(texture)},undefined,()=>{if(state.pano&&state.world===world)$('panoStatus').textContent='實景載入失敗，請返回後再試。'});
  }panoDraw()}
-function enterIndoor(){const gym=Math.hypot(state.x-gymTarget.x,state.z-gymTarget.z)<gymTarget.r;outdoorPosition={x:state.x,y:state.y,z:state.z,yaw:state.yaw};clearControls();Object.assign(state,gym?gymStart:indoorStart,{world:gym?'gym':'indoor'});(gym?gymIndoor:indoor).add(drone);camera.position.set(0,9.5,36);$('indoorActions').classList.remove('hidden');$('mapLabel').textContent=gym?'體育館示意圖':'泳健館示意圖';$('targetLegend').classList.add('hidden');toast(gym?'進入體育館，請避開牆壁及屋頂':'進入泳健館，請避開牆壁及屋頂')}
-function returnOutdoor(){const gym=state.world==='gym';clearControls();Object.assign(state,outdoorPosition||start,{world:'outdoor'});scene.add(drone);camera.position.set(state.x,state.y+5,state.z+8);$('indoorActions').classList.add('hidden');$('mapLabel').textContent='校園示意圖';$('targetLegend').classList.remove('hidden');toast(gym?'已返回體育館戶外':'已返回泳健館戶外')}
+function enterIndoor(){const student=Math.hypot(state.x-studentTarget.x,state.z-studentTarget.z)<studentTarget.r,gym=Math.hypot(state.x-gymTarget.x,state.z-gymTarget.z)<gymTarget.r;outdoorPosition={x:state.x,y:state.y,z:state.z,yaw:state.yaw};clearControls();Object.assign(state,student?studentStart:gym?gymStart:indoorStart,{world:student?'student':gym?'gym':'indoor'});(student?studentIndoor:gym?gymIndoor:indoor).add(drone);camera.position.set(0,9.5,36);$('indoorActions').classList.remove('hidden');$('panoButton').classList.toggle('hidden',student);$('mapLabel').textContent=student?'活動中心示意圖':gym?'體育館示意圖':'泳健館示意圖';$('mapCompass').textContent='';$('targetLegend').classList.add('hidden');toast(student?'進入活動中心示意大廳，請留意柱子':'進入館內，請避開牆壁及屋頂')}
+function returnOutdoor(){const name=state.world==='student'?'學生活動中心':state.world==='gym'?'體育館':'泳健館';clearControls();Object.assign(state,outdoorPosition||start,{world:'outdoor'});scene.add(drone);camera.position.set(state.x-Math.sin(state.yaw)*8,state.y+5,state.z+Math.cos(state.yaw)*8);$('indoorActions').classList.add('hidden');$('mapLabel').textContent='校園示意圖';$('mapCompass').textContent='北 ↑';$('targetLegend').classList.remove('hidden');toast('已返回'+name+'戶外')}
 $('visitButton').onclick=enterIndoor;$('panoButton').onclick=openPano;$('outdoorButton').onclick=returnOutdoor;
 $('closePano').onclick=()=>{state.pano=false;cancelAnimationFrame(panoRenderId);$('panorama').classList.add('hidden');toast('已返回飛行畫面')};
 const panoEl=$('panoScene');panoEl.style.touchAction='none';panoEl.addEventListener('pointerdown',e=>{if(panoDrag)return;panoDrag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:panoYaw,pitch:panoPitch};panoEl.setPointerCapture(e.pointerId)});panoEl.addEventListener('pointermove',e=>{if(!panoDrag||e.pointerId!==panoDrag.id)return;panoYaw=panoDrag.yaw-(e.clientX-panoDrag.x)*.18;panoPitch=THREE.MathUtils.clamp(panoDrag.pitch+(e.clientY-panoDrag.y)*.18,-85,85)});function endPano(e){if(panoDrag&&e.pointerId===panoDrag.id)panoDrag=null}panoEl.addEventListener('pointerup',endPano);panoEl.addEventListener('pointercancel',endPano);panoEl.addEventListener('lostpointercapture',endPano);
