@@ -20,16 +20,29 @@ plane(0,0,500,500,grass,-.1);
 plane(0,0,210,220,material('#b6ba99'),-.04);
 // The north-south athletics field and its running lanes are one lightweight canvas texture.
 const trackCanvas=document.createElement('canvas');trackCanvas.width=1024;trackCanvas.height=1536;const tc=trackCanvas.getContext('2d');
-tc.fillStyle='#7aa965';tc.fillRect(0,0,1024,1536);
-tc.fillStyle='#b75941';tc.beginPath();tc.roundRect(67,45,890,1446,445);tc.fill();
-tc.fillStyle='#79a762';tc.beginPath();tc.roundRect(190,168,644,1200,322);tc.fill();
-tc.strokeStyle='rgba(255,248,224,.88)';tc.lineWidth=5;
-for(let i=0;i<6;i++){let v=78+i*21;tc.beginPath();tc.roundRect(v,v-33,1024-v*2,1536-(v-33)*2,(1024-v*2)/2);tc.stroke()}
-tc.strokeStyle='#edf0d4';tc.lineWidth=4;tc.strokeRect(300,420,424,690);tc.beginPath();tc.moveTo(300,765);tc.lineTo(724,765);tc.arc(512,765,84,0,Math.PI*2);tc.stroke();
 const fieldTexture=new THREE.CanvasTexture(trackCanvas);fieldTexture.colorSpace=THREE.SRGBColorSpace;
+function drawTrack(grassImage){
+  tc.fillStyle='#9ba980';tc.fillRect(0,0,1024,1536);
+  tc.fillStyle='#b7513d';tc.beginPath();tc.roundRect(67,45,890,1446,445);tc.fill();
+  // Subtle granules approximate the texture of the red running surface.
+  let seed=518;for(let i=0;i<24000;i++){seed=(seed*1664525+1013904223)>>>0;let x=seed%1024;seed=(seed*1664525+1013904223)>>>0;let y=seed%1536;tc.fillStyle=i%2?'#f8c3a510':'#4527190b';tc.fillRect(x,y,2,2)}
+  tc.save();tc.beginPath();tc.roundRect(190,168,644,1200,322);tc.clip();const grassPattern=grassImage?tc.createPattern(grassImage,'repeat'):null;if(grassPattern&&typeof grassPattern.setTransform==='function')grassPattern.setTransform(new DOMMatrix().scale(.35));tc.fillStyle=grassPattern||'#82a45c';tc.fillRect(190,168,644,1200);tc.restore();
+  // The real field has a green throwing/jumping area rather than soccer markings.
+  tc.fillStyle='#4b937b';tc.beginPath();tc.moveTo(212,780);tc.lineTo(520,780);tc.lineTo(625,1110);tc.lineTo(265,1110);tc.closePath();tc.fill();
+  tc.fillStyle='#bbc5ba';for(const [x,y] of [[455,310],[610,1180]]){tc.beginPath();tc.arc(x,y,19,0,Math.PI*2);tc.fill()}
+  tc.strokeStyle='rgba(255,249,237,.92)';tc.lineWidth=4;
+  for(let i=0;i<6;i++){let v=78+i*21;tc.beginPath();tc.roundRect(v,v-33,1024-v*2,1536-(v-33)*2,(1024-v*2)/2);tc.stroke()}
+  tc.lineWidth=4;for(let i=0;i<6;i++){let x=83+i*21;tc.beginPath();tc.moveTo(x,620+i*14);tc.lineTo(x+20,620+i*14);tc.stroke()}
+  fieldTexture.needsUpdate=true;
+}
+drawTrack();const fieldGrass=new Image();fieldGrass.onload=()=>drawTrack(fieldGrass);fieldGrass.src='./assets/grass.jpg';
 plane(-8,0,84,132,new THREE.MeshBasicMaterial({map:fieldTexture}),.02);
-// Basketball court west of the track.
-plane(-68,5,28,46,material('#6ba7aa'),.04);for(let x of [-80,-56])box(x,.07,5,.12,.08,42,material('#edf3dc'));
+// Blue outdoor courts, fencing and lighting beside the athletics track.
+const courtsCanvas=document.createElement('canvas');courtsCanvas.width=512;courtsCanvas.height=768;const cc=courtsCanvas.getContext('2d');cc.fillStyle='#63a9be';cc.fillRect(0,0,512,768);cc.strokeStyle='#f8f7e8';cc.lineWidth=4;
+for(let y=0;y<768;y+=384){cc.strokeRect(28,y+22,456,340);cc.beginPath();cc.moveTo(28,y+192);cc.lineTo(484,y+192);cc.arc(256,y+192,46,0,Math.PI*2);cc.stroke();cc.strokeRect(150,y+22,212,68);cc.strokeRect(150,y+294,212,68)}
+const courtsTex=new THREE.CanvasTexture(courtsCanvas);courtsTex.colorSpace=THREE.SRGBColorSpace;plane(-67,3,27,46,new THREE.MeshBasicMaterial({map:courtsTex}),.05);
+const rail=material('#66807c');for(let z=-20;z<=26;z+=5){for(let x of [-81,-53])box(x,1.7,z,.14,3.4,.14,rail)}for(let x of [-81,-53])box(x,3.2,3,.14,.14,46,rail);
+for(let z of [-16,3,22]){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.3,.45,15,8),material('#717d7d'));pole.position.set(-83,7.5,z);scene.add(pole);box(-83,15.2,z,2.8,.5,1.4,material('#e1ded4'))}
 const obstacles=[], labels=[];
 function label(text,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.fillStyle='#193e40';g.beginPath();g.roundRect(0,0,512,128,18);g.fill();g.fillStyle='#fff';g.font='bold 60px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,256,67);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:true}));s.position.set(x,y,z);s.scale.set(20,5,1);scene.add(s);labels.push(s)}
 function building(name,x,z,w,d,h,base=brick){
@@ -38,17 +51,25 @@ function building(name,x,z,w,d,h,base=brick){
   for(let j=0;j<floors;j++){let yy=2+j*(h-3)/floors;for(let xx=-w/2+3;xx<w/2-1;xx+=5){box(x+xx,yy,z+d/2+.06,3,2,.1,windowMat);box(x+xx,yy,z-d/2-.06,3,2,.1,windowMat)}}
   obstacles.push({x,z,w,d,h});label(name,x,h+5,z);}
 // Relative placement follows the campus guide; dimensions and facade are illustrative.
-building('大禮堂',68,33,29,26,14,material('#b8785f'));
+// White-columned hall and red-brick base beside the field.
+box(68,7,33,27,14,29,material('#ddd9c8'));box(68,1.5,33,27.5,3,29.5,material('#a76a56'));box(68,14.5,33,29,1.1,31,material('#eee9d7'));
+box(54.35,7.5,33,.12,8,25,material('#526b70'));for(let z=21;z<=45;z+=4)box(54,7.8,z,.8,11.5,.8,material('#f2eee0'));box(54,4,33,1.2,.5,26,material('#dedcd0'));
+obstacles.push({x:68,z:33,w:27,d:29,h:15});label('大禮堂',68,20,33);
 building('創意館',70,-12,29,28,17,material('#c08b68'));
-building('體育館',-90,-42,35,36,20,material('#bc846d'));
+// Gym facade uses the user's track-side panorama; its depth remains a simple 3D approximation.
+const texLoader=new THREE.TextureLoader();function photoMaterial(path){const texture=texLoader.load(path);texture.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshBasicMaterial({map:texture})}
+const gymX=-93,gymZ=-42;box(gymX,11.5,gymZ,39,23,53,material('#a96049'));box(gymX,23.4,gymZ,40,.8,54,material('#b8b9b2'));
+const gymFront=new THREE.Mesh(new THREE.PlaneGeometry(53,23),photoMaterial('./assets/gym-facade.jpg'));gymFront.position.set(gymX+19.6,11.5,gymZ);gymFront.rotation.y=Math.PI/2;scene.add(gymFront);
+for(let z=-66;z<=-18;z+=8){box(gymX+19.2,2,z,.8,4,1,material('#a3a6a0'))}obstacles.push({x:gymX,z:gymZ,w:39,d:53,h:23});label('體育館',gymX,28,gymZ);
 building('明德樓',-19,-104,70,20,22,material('#c18b73'));
-// Rounded, timber-coloured facade echoes the pool entrance in the supplied photo.
+// The sports centre is a long red-brick hall with horizontal sunshade slats.
 const poolX=79,poolZ=-74;
-const poolBase=new THREE.Mesh(new THREE.CylinderGeometry(22,22,17,32),material('#8c5744'));poolBase.position.set(poolX,8.5,poolZ);scene.add(poolBase);
-const poolGlass=new THREE.Mesh(new THREE.CylinderGeometry(22.15,22.15,5,32,1,true),material('#446a6e'));poolGlass.position.set(poolX,5,poolZ);scene.add(poolGlass);
-const poolRoof=new THREE.Mesh(new THREE.CylinderGeometry(23,23,1.4,32),roofMat);poolRoof.position.set(poolX,17.5,poolZ);scene.add(poolRoof);
-for(let i=0;i<32;i++){const a=i*Math.PI*2/32;box(poolX+Math.cos(a)*22.4,11,poolZ+Math.sin(a)*22.4,.7,12,.7,material('#d4b18c'))}
-obstacles.push({x:poolX,z:poolZ,w:44,d:44,h:18});label('泳健館',poolX,25,poolZ);
+box(poolX,8,poolZ,30,16,58,material('#a7553d'));box(poolX,16.4,poolZ,31,.8,59,material('#726f61'));
+const poolFront=new THREE.Mesh(new THREE.PlaneGeometry(58,15),photoMaterial('./assets/pool-facade.jpg'));poolFront.rotation.y=-Math.PI/2;poolFront.position.set(poolX-15.1,7.7,poolZ);scene.add(poolFront);
+// Side and rear faces keep the same brick columns, lower glazing and upper louvres.
+for(const side of [-1,1]){const x=poolX+side*15.1;for(let z=poolZ-27;z<=poolZ+27;z+=6){box(x,8,z,.6,16,.9,material('#a6583d'))}for(let y=7.5;y<15.2;y+=.65)box(x,y,poolZ,.25,.16,58,material('#7d4b34'))}
+box(poolX-19,5,poolZ-21,8,.8,14,material('#9d9d96'));box(poolX-22.5,2.5,poolZ-26,.8,5,2,material('#9d9d96'));
+obstacles.push({x:poolX,z:poolZ,w:30,d:58,h:17});label('泳健館',poolX,23,poolZ);
 function tree(x,z,s=1){const trunk=material('#78654c'),leaves=material('#568354');const tr=new THREE.Mesh(new THREE.CylinderGeometry(.55,.75,5*s,7),trunk);tr.position.set(x,2.5*s,z);scene.add(tr);const cr=new THREE.Mesh(new THREE.SphereGeometry(3.5*s,10,7),leaves);cr.position.set(x,6*s,z);scene.add(cr)}
 for(const [x,z] of [[-58,-75],[-59,-50],[-60,-22],[-60,50],[49,45],[49,22],[49,-6],[48,-32],[-58,76],[-24,82],[9,82],[38,79],[-110,10]])tree(x,z,.8+Math.random()*.3);
 // Landing marker, intentionally on the accessible side of the building.
@@ -63,20 +84,35 @@ const indoor = new THREE.Scene();indoor.background=new THREE.Color('#b7d5dc');
 indoor.add(new THREE.HemisphereLight(0xeef8ff,0xa7a9a3,2.3));
 const indoorSun=new THREE.DirectionalLight('#fff8e9',1.2);indoorSun.position.set(5,25,8);indoor.add(indoorSun);
 const tileCanvas=document.createElement('canvas');tileCanvas.width=512;tileCanvas.height=512;const tiled=tileCanvas.getContext('2d');
-tiled.fillStyle='#d4d8d3';tiled.fillRect(0,0,512,512);tiled.strokeStyle='#a6b1ad';tiled.lineWidth=1;
+tiled.fillStyle='#e6e5da';tiled.fillRect(0,0,512,512);tiled.strokeStyle='#a9aaa1';tiled.lineWidth=1;
 for(let i=0;i<=512;i+=32){tiled.beginPath();tiled.moveTo(i,0);tiled.lineTo(i,512);tiled.moveTo(0,i);tiled.lineTo(512,i);tiled.stroke()}
-const tileTex=new THREE.CanvasTexture(tileCanvas);tileTex.wrapS=tileTex.wrapT=THREE.RepeatWrapping;tileTex.repeat.set(2,3);tileTex.colorSpace=THREE.SRGBColorSpace;
+const tileTex=new THREE.CanvasTexture(tileCanvas);tileTex.wrapS=tileTex.wrapT=THREE.RepeatWrapping;tileTex.repeat.set(4,7);tileTex.colorSpace=THREE.SRGBColorSpace;
 box(0,-.3,0,50,.5,82,new THREE.MeshStandardMaterial({map:tileTex,roughness:1}),indoor);
-const water=material('#1599bf',{roughness:.32,metalness:.08});box(0,.015,0,22,.12,52,water,indoor);
-const laneWhite=material('#e8f1e7'),laneBlue=material('#245983');
-for(let x=-9.2;x<=9.3;x+=3.7){box(x,.11,0,.14,.08,50,laneWhite,indoor);for(let z=-24;z<25;z+=4)box(x,.13,z,.22,.1,1.8,laneBlue,indoor)}
-const wall=material('#c1d4d0'),glass=material('#a4d1de',{roughness:.5}),frameMat=material('#f1eee1'),insideBrick=material('#a97865');
-box(-25,9,0,.8,18,82,wall,indoor);box(25,9,0,.8,18,82,wall,indoor);box(0,9,-41,50,18,.8,wall,indoor);box(0,9,41,50,18,.8,wall,indoor);
-box(0,18.3,0,50,.6,82,material('#e4e4d9'),indoor);
-for(const side of [-1,1]){for(let z=-34;z<=34;z+=8.5){box(side*24.5,8.5,z,.15,11,7.4,glass,indoor);box(side*24.2,9,z-4,.55,18,.7,insideBrick,indoor);for(let k=-3;k<=3;k+=3)box(side*24.35,8.5,z+k,.35,11,.18,frameMat,indoor);box(side*24.35,8.5,z,.35,.23,7.8,frameMat,indoor)}}
-for(let z=-35;z<=35;z+=7){box(0,17.4,z,48,.6,.65,frameMat,indoor);for(let x=-19;x<=19;x+=6.3)box(x,16.8,z,3,.5,2.1,material('#f4f2ea'),indoor)}
-box(0,8.5,-40.5,44,9,.15,glass,indoor);for(let x=-20;x<=20;x+=5)box(x,8.5,-40.3,.35,10,.35,frameMat,indoor);
-for(let x=-9;x<=9;x+=3.6){box(x,.9,27,2,1.8,1.5,frameMat,indoor);box(x,1.85,27,2.2,.18,1.7,laneBlue,indoor)}
+const poolCanvas=document.createElement('canvas');poolCanvas.width=768;poolCanvas.height=1536;const pc=poolCanvas.getContext('2d');
+const waterGradient=pc.createLinearGradient(0,0,768,0);waterGradient.addColorStop(0,'#62b9d2');waterGradient.addColorStop(.42,'#29bdd8');waterGradient.addColorStop(1,'#55a9c5');pc.fillStyle=waterGradient;pc.fillRect(0,0,768,1536);
+pc.strokeStyle='#17588b';pc.lineWidth=17;for(let i=0;i<6;i++){const x=(i+.5)*128;pc.beginPath();pc.moveTo(x,135);pc.lineTo(x,1400);pc.stroke();pc.beginPath();pc.moveTo(x-35,135);pc.lineTo(x+35,135);pc.moveTo(x-35,1400);pc.lineTo(x+35,1400);pc.stroke()}
+for(let i=1;i<6;i++){const x=i*128;for(let y=30;y<1510;y+=14){pc.fillStyle=(Math.floor(y/14)%2)?'#e9f0e9':(y<200||y>1330?'#c75045':'#2a5b8c');pc.fillRect(x-3,y,6,10)}}
+pc.strokeStyle='#ffffff24';pc.lineWidth=4;for(let y=75;y<1500;y+=82){pc.beginPath();pc.moveTo(12,y);pc.bezierCurveTo(170,y-14,360,y+10,750,y-6);pc.stroke()}
+const waterTexture=new THREE.CanvasTexture(poolCanvas);waterTexture.colorSpace=THREE.SRGBColorSpace;const waterPlane=new THREE.Mesh(new THREE.PlaneGeometry(22,52),new THREE.MeshStandardMaterial({map:waterTexture,roughness:.35,metalness:.1}));waterPlane.rotation.x=-Math.PI/2;waterPlane.position.y=.06;indoor.add(waterPlane);
+const laneBlue=material('#245983'),frameMat=material('#d8dddc'),glass=material('#cfebf1',{roughness:.3}),darkFrame=material('#4e5e60');
+const brickTexture=texLoader.load('./assets/brick.jpg');brickTexture.colorSpace=THREE.SRGBColorSpace;brickTexture.wrapS=brickTexture.wrapT=THREE.RepeatWrapping;brickTexture.repeat.set(3,2);const insideBrick=new THREE.MeshStandardMaterial({map:brickTexture,roughness:.92});
+box(-25,9,0,.8,18,82,insideBrick,indoor);box(25,9,0,.8,18,82,insideBrick,indoor);box(0,9,-41,50,18,.8,insideBrick,indoor);box(0,9,41,50,18,.8,insideBrick,indoor);
+box(0,18.3,0,50,.6,82,material('#303f4b'),indoor);
+for(const side of [-1,1]){for(let z=-34;z<=34;z+=8.5){
+  box(side*24.48,4.4,z,.15,6.4,7.4,glass,indoor);box(side*24.48,12.4,z,.15,4.4,7.4,glass,indoor);
+  box(side*24.15,9,z-4,.65,18,.75,insideBrick,indoor);
+  for(let k=-3;k<=3;k+=2){box(side*24.32,4.4,z+k,.35,6.5,.22,darkFrame,indoor);box(side*24.32,12.4,z+k,.35,4.5,.22,darkFrame,indoor)}
+  box(side*24.31,4.5,z,.35,.2,7.8,darkFrame,indoor);box(side*24.31,12.5,z,.35,.2,7.8,darkFrame,indoor);
+ }
+ // Continuous first-floor gallery and handrails seen in the original photograph.
+ box(side*23.7,9.1,0,2,.45,80,material('#727d7d'),indoor);box(side*22.8,10.3,0,.15,.13,80,frameMat,indoor);
+ for(let z=-38;z<40;z+=4)box(side*22.8,9.75,z,.15,1.2,.15,frameMat,indoor);
+}
+for(let z=-35;z<=35;z+=5.5){box(0,17.6,z,48,.4,.45,material('#4d5c64'),indoor);for(let x=-17;x<=17;x+=5.6)box(x,16.8,z,4.6,.34,1.2,material('#f1f0e8'),indoor)}
+box(0,8.5,-40.5,39,6,.12,material('#ba6b50'),indoor);box(0,6,-40.3,10,5,.15,glass,indoor);
+const rim=material('#e4e1d2');for(const x of [-11.3,11.3])box(x,.12,0,.65,.18,53,rim,indoor);for(const z of [-26.3,26.3])box(0,.12,z,23,.18,.65,rim,indoor);
+for(let x=-9.2;x<=9.3;x+=3.7){box(x,.55,27,2,1.1,1.5,frameMat,indoor);box(x,1.15,27,2.1,.16,1.6,laneBlue,indoor)}
+for(const x of [-12,12]){for(const z of [-18,18]){box(x,.65,z,.12,1.3,.12,frameMat,indoor);box(x,.65,z+1.3,.12,1.3,.12,frameMat,indoor);box(x,1.28,z+.65,.12,.12,1.4,frameMat,indoor)}}
 // Scene-specific bounds keep the drone and follow camera inside the hall.
 const indoorStart={x:0,y:4.5,z:23,yaw:0};
 const start={x:0,y:5,z:38,yaw:0};const state={...start,vx:0,vy:0,vz:0,view:'chase',paused:true,pano:false,world:'outdoor'};
