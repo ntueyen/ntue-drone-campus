@@ -17,7 +17,7 @@ const grass = material('#83a86c'), concrete = material('#c8c6af'), brick = mater
 function box(x,y,z,w,h,d,mat,group=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);o.position.set(x,y,z);group.add(o);return o;}
 function plane(x,z,w,d,mat,y=.05){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat);m.rotation.x=-Math.PI/2;m.position.set(x,y,z);scene.add(m);return m;}
 plane(0,0,500,500,grass,-.1);
-plane(0,0,210,220,material('#b6ba99'),-.04);
+plane(0,20,240,280,material('#b6ba99'),-.04);
 // The north-south athletics field and its running lanes are one lightweight canvas texture.
 const trackCanvas=document.createElement('canvas');trackCanvas.width=1024;trackCanvas.height=1536;const tc=trackCanvas.getContext('2d');
 const fieldTexture=new THREE.CanvasTexture(trackCanvas);fieldTexture.colorSpace=THREE.SRGBColorSpace;
@@ -70,8 +70,40 @@ const poolFront=new THREE.Mesh(new THREE.PlaneGeometry(58,15),photoMaterial('./a
 for(const side of [-1,1]){const x=poolX+side*15.1;for(let z=poolZ-27;z<=poolZ+27;z+=6){box(x,8,z,.6,16,.9,material('#a6583d'))}for(let y=7.5;y<15.2;y+=.65)box(x,y,poolZ,.25,.16,58,material('#7d4b34'))}
 box(poolX-19,5,poolZ-21,8,.8,14,material('#9d9d96'));box(poolX-22.5,2.5,poolZ-26,.8,5,2,material('#9d9d96'));
 obstacles.push({x:poolX,z:poolZ,w:30,d:58,h:17});label('泳健館',poolX,23,poolZ);
+
+// The four buildings on the opposite side of the field are arranged from
+// west to east using the university's campus map. Facades are approximate:
+// library, audiovisual hall and Duxing use crops from the supplied panoramas.
+plane(0,80,218,16,material('#a7aaa2'),-.005);
+function photoBuilding(name,x,z,w,d,h,path,baseColor){
+  box(x,h/2,z,w,h,d,material(baseColor));
+  box(x,h+.3,z,w+1,.6,d+1,material('#d0cbbf'));
+  const facade=new THREE.Mesh(new THREE.PlaneGeometry(w,h),photoMaterial(path));
+  facade.position.set(x,h/2,z-d/2-.06);facade.rotation.y=Math.PI;scene.add(facade);
+  obstacles.push({x,z,w,d,h});label(name,x,h+5,z);
+}
+photoBuilding('視聽館',-62,107,36,25,20,'./assets/audiovisual-facade.jpg','#ac5e49');
+photoBuilding('圖書館',-17,108,41,25,28,'./assets/library-facade.jpg','#a35d4b');
+photoBuilding('篤行樓',45,109,42,27,33,'./assets/duxing-facade.jpg','#b46b55');
+
+// Student Center: approximate red-brick wings, cream horizontal bands,
+// paired entrance columns and a glazed tower, based on the public tour.
+const studentX=-103,studentZ=81,studentW=30,studentD=25,studentH=25;
+const studentBrick=material('#ac6457'),lightConcrete=material('#d7d1c0'),studentGlass=material('#8caeb6',{roughness:.42});
+box(studentX,studentH/2,studentZ,studentW,studentH,studentD,studentBrick);
+box(studentX,studentH+.35,studentZ,studentW+1,.7,studentD+1,lightConcrete);
+for(let floor=1;floor<=5;floor++){const y=2.6+floor*3.8;box(studentX,y,studentZ-studentD/2-.15,studentW,.65,.5,lightConcrete);
+  for(let x=studentX-11;x<=studentX+10;x+=5)box(x,y+1.45,studentZ-studentD/2-.2,3.8,1.55,.2,material('#60787b'));
+  box(studentX+studentW/2+.15,y,studentZ,.5,.65,studentD,lightConcrete);
+  for(let z=studentZ-9;z<=studentZ+9;z+=6)box(studentX+studentW/2+.2,y+1.45,z,.2,1.55,4.2,studentGlass)}
+box(studentX,6,studentZ-studentD/2-.45,14,10,.3,material('#6e7070'));
+box(studentX,10.2,studentZ-studentD/2-2,18,1.2,5,lightConcrete);
+for(const x of [studentX-7,studentX+7]){const column=new THREE.Mesh(new THREE.CylinderGeometry(.7,.8,10,12),lightConcrete);column.position.set(x,5,studentZ-studentD/2-3);scene.add(column)}
+box(studentX+13,13,studentZ-studentD/2-.7,5,25,2,studentGlass);
+for(let y=3;y<25;y+=3)box(studentX+13,y,studentZ-studentD/2-1.8,5,.18,.2,lightConcrete);
+obstacles.push({x:studentX,z:studentZ,w:studentW,d:studentD,h:studentH});label('學生活動中心',studentX,30,studentZ);
 function tree(x,z,s=1){const trunk=material('#78654c'),leaves=material('#568354');const tr=new THREE.Mesh(new THREE.CylinderGeometry(.55,.75,5*s,7),trunk);tr.position.set(x,2.5*s,z);scene.add(tr);const cr=new THREE.Mesh(new THREE.SphereGeometry(3.5*s,10,7),leaves);cr.position.set(x,6*s,z);scene.add(cr)}
-for(const [x,z] of [[-58,-75],[-59,-50],[-60,-22],[-60,50],[49,45],[49,22],[49,-6],[48,-32],[-58,76],[-24,82],[9,82],[38,79],[-110,10]])tree(x,z,.8+Math.random()*.3);
+for(const [x,z] of [[-58,-75],[-59,-50],[-60,-22],[-60,50],[49,45],[49,22],[49,-6],[48,-32],[-85,69],[-45,78],[8,79],[32,81],[-110,10]])tree(x,z,.8+Math.random()*.3);
 // Landing marker, intentionally on the accessible side of the building.
 const target={x:48,z:-72,r:12};const ring=new THREE.Mesh(new THREE.RingGeometry(6.8,7.3,64),new THREE.MeshBasicMaterial({color:'#f7d782',side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(target.x,.15,target.z);scene.add(ring);
 const beacon=new THREE.Mesh(new THREE.TorusGeometry(2.7,.12,8,36),new THREE.MeshBasicMaterial({color:'#ffe69a'}));beacon.position.set(target.x,8,target.z);scene.add(beacon);label('泳健館入口',target.x,13,target.z);
@@ -137,9 +169,9 @@ function blocked(x,y,z){return obstacles.some(b=>y<b.h+1.5&&Math.abs(x-b.x)<b.w/
 const map=$('map').getContext('2d');
 function drawMap(){map.clearRect(0,0,200,190);map.fillStyle='#3b655e';map.fillRect(0,0,200,190);
  if(state.world==='indoor'){map.fillStyle='#d0d9cc';map.fillRect(42,12,116,166);map.fillStyle='#428fb0';map.fillRect(75,42,50,106);map.strokeStyle='#dbf2f5';for(let x=83;x<125;x+=8){map.beginPath();map.moveTo(x,42);map.lineTo(x,148);map.stroke()}let x=100+state.x*2.2,z=95+state.z*2;map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore();return}
- const p=(x,z)=>[100+x*.78,95+z*.78];
-  let [fx,fz]=p(-8,0);map.fillStyle='#bd755d';map.beginPath();map.roundRect(fx-32,fz-51,64,102,32);map.fill();map.fillStyle='#87a670';map.beginPath();map.roundRect(fx-23,fz-42,46,84,23);map.fill();
-  map.fillStyle='#a9b9a4';for(const b of obstacles){let[x,z]=p(b.x,b.z);map.fillRect(x-b.w*.39,z-b.d*.39,b.w*.78,b.d*.78)}
+ const scale=.57,p=(x,z)=>[100+x*scale,84+z*scale];
+  let [fx,fz]=p(-8,0);map.fillStyle='#bd755d';map.beginPath();map.roundRect(fx-24,fz-38,48,76,24);map.fill();map.fillStyle='#87a670';map.beginPath();map.roundRect(fx-17,fz-31,34,62,17);map.fill();
+  map.fillStyle='#a9b9a4';for(const b of obstacles){let[x,z]=p(b.x,b.z);map.fillRect(x-b.w*scale/2,z-b.d*scale/2,b.w*scale,b.d*scale)}
   let [tx,tz]=p(target.x,target.z);map.fillStyle='#ffcd79';map.beginPath();map.arc(tx,tz,5,0,7);map.fill();let [x,z]=p(state.x,state.z);map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore()}
 let last=performance.now();const look=new THREE.Vector3(),cameraGoal=new THREE.Vector3();
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;
@@ -150,13 +182,13 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/10
    const blend=1-Math.exp(-5*dt);state.vx+=(vx-state.vx)*blend;state.vy+=(vy-state.vy)*blend;state.vz+=(vz-state.vz)*blend;
    let rawX=state.x+state.vx*dt,rawZ=state.z+state.vz*dt;
    const rawY=state.y+state.vy*dt;
-   let nx=THREE.MathUtils.clamp(rawX,indoorMode?-21:-115,indoorMode?21:112),nz=THREE.MathUtils.clamp(rawZ,indoorMode?-37:-115,indoorMode?37:105),ny=THREE.MathUtils.clamp(rawY,2,indoorMode?15.5:38);
+   let nx=THREE.MathUtils.clamp(rawX,indoorMode?-21:-115,indoorMode?21:112),nz=THREE.MathUtils.clamp(rawZ,indoorMode?-37:-115,indoorMode?37:155),ny=THREE.MathUtils.clamp(rawY,2,indoorMode?15.5:38);
    if((nx!==rawX||nz!==rawZ||(indoorMode&&ny!==rawY))&&now-lastToast>2000){toast(indoorMode?'已接近館內牆壁、地面或屋頂':'已到達本次練習範圍邊界');lastToast=now}
    if(indoorMode||!blocked(nx,ny,nz)){state.x=nx;state.z=nz;state.y=ny}else{state.vx=state.vz=0;if(now-lastToast>2000){toast('接近建築，請調整方向或高度');lastToast=now}}
  }
  drone.position.set(state.x,state.y,state.z);drone.rotation.y=-state.yaw;drone.visible=state.view==='chase';
  const forward=new THREE.Vector3(Math.sin(state.yaw),0,-Math.cos(state.yaw));
- if(state.view==='chase'){cameraGoal.set(state.x-forward.x*13,state.y+7,state.z-forward.z*13);look.set(state.x+forward.x*8,state.y,state.z+forward.z*8)}else{cameraGoal.set(state.x+forward.x*1.7,state.y+.6,state.z+forward.z*1.7);look.set(state.x+forward.x*30,state.y-1,state.z+forward.z*30)}
+ if(state.view==='chase'){const indoors=state.world==='indoor';cameraGoal.set(state.x-forward.x*13,state.y+(indoors?7:5.5),state.z-forward.z*13);look.set(state.x+forward.x*8,state.y+(indoors?0:4.5),state.z+forward.z*8)}else{cameraGoal.set(state.x+forward.x*1.7,state.y+.6,state.z+forward.z*1.7);look.set(state.x+forward.x*30,state.y-1,state.z+forward.z*30)}
  if(state.world==='indoor'){cameraGoal.x=THREE.MathUtils.clamp(cameraGoal.x,-23,23);cameraGoal.y=THREE.MathUtils.clamp(cameraGoal.y,1.5,17);cameraGoal.z=THREE.MathUtils.clamp(cameraGoal.z,-39,39)}
  camera.position.lerp(cameraGoal,1-Math.exp(-5*dt));camera.lookAt(look);for(const tag of labels){const width=THREE.MathUtils.clamp(camera.position.distanceTo(tag.position)*.15,3,20);tag.scale.set(width,width/4,1)}renderer.render(state.world==='indoor'?indoor:scene,camera);
  const near=state.world==='outdoor'&&Math.hypot(state.x-target.x,state.z-target.z)<target.r; $('visitButton').classList.toggle('hidden',!near||state.pano||state.paused);$('missionText').textContent=state.world==='indoor'?'泳健館室內飛行練習':near?'已抵達泳健館入口':'從操場飛向泳健館';
