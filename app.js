@@ -18,7 +18,7 @@ const grass = material('#83a86c'), concrete = material('#c8c6af'), brick = mater
 function box(x,y,z,w,h,d,mat,group=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);o.position.set(x,y,z);group.add(o);return o;}
 function plane(x,z,w,d,mat,y=.05){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat);m.rotation.x=-Math.PI/2;m.position.set(x,y,z);scene.add(m);return m;}
 plane(0,0,500,500,grass,-.1);
-plane(0,20,240,280,material('#b6ba99'),-.04);
+plane(0,20,380,280,material('#b6ba99'),-.04);
 // The north-south athletics field and its running lanes are one lightweight canvas texture.
 const trackCanvas=document.createElement('canvas');trackCanvas.width=1024;trackCanvas.height=1536;const tc=trackCanvas.getContext('2d');
 const fieldTexture=new THREE.CanvasTexture(trackCanvas);fieldTexture.colorSpace=THREE.SRGBColorSpace;
@@ -52,11 +52,28 @@ function building(name,x,z,w,d,h,base=brick){
   for(let j=0;j<floors;j++){let yy=2+j*(h-3)/floors;for(let xx=-w/2+3;xx<w/2-1;xx+=5){box(x+xx,yy,z+d/2+.06,3,2,.1,windowMat);box(x+xx,yy,z-d/2-.06,3,2,.1,windowMat)}}
   obstacles.push({x,z,w,d,h});label(name,x,h+5,z);}
 // Relative placement follows the campus guide; dimensions and facade are illustrative.
-// White-columned hall and red-brick base beside the field.
-box(68,7,33,27,14,29,material('#ddd9c8'));box(68,1.5,33,27.5,3,29.5,material('#a76a56'));box(68,14.5,33,29,1.1,31,material('#eee9d7'));
-box(54.35,7.5,33,.12,8,25,material('#526b70'));for(let z=21;z<=45;z+=4)box(54,7.8,z,.8,11.5,.8,material('#f2eee0'));box(54,4,33,1.2,.5,26,material('#dedcd0'));
-obstacles.push({x:68,z:33,w:27,d:29,h:15});label('大禮堂',68,20,33);
-building('創意館',70,-12,29,28,17,material('#c08b68'));
+// West-facing field frontage: Creative Hall's cream vertical fins and
+// the adjacent historic auditorium's low, pitched roof and brick arcade.
+const cream=material('#ddd9c8'),darkGlass=material('#566f73'),darkBrick=material('#9b5e4b');
+box(70,9,-12,29,18,28,cream);box(70,2,-12,29.2,4,28.2,darkBrick);
+box(55.35,10,-12,.2,13,24,material('#657b7b'));
+for(let z=-23;z<=-1;z+=2.4)box(55.05,12,z,.55,11,.45,cream);
+for(let z=-23;z<=-1;z+=5.5)box(55,5.5,z,.8,7,.8,cream);
+box(55,9,-12,1,1,26,cream);box(70,18.3,-12,30,.7,29,cream);
+box(84,9,2.7,4,17,2,material('#a7c3bd'));for(let y=2;y<18;y+=2)box(84,y,1.6,4,.12,.15,cream);
+obstacles.push({x:70,z:-12,w:29,d:28,h:19});label('創意館',70,23,-12);
+const hallX=69,hallZ=32,hallW=24,hallD=36;
+box(hallX,3.9,hallZ,hallW,7.8,hallD,material('#a55d4e'));
+box(hallX,1,hallZ,hallW+.3,2,hallD+.3,material('#96948b'));
+for(const side of [-1,1]){const roof=box(hallX+side*6,10,hallZ,13.8,.7,hallD+2,material('#646865'));roof.rotation.z=side*-.38}
+for(let z=hallZ-14;z<=hallZ+14;z+=5.6){
+ const faceX=hallX-hallW/2-.14, archWidth=1.9;
+ box(faceX,2.35,z,.12,3.5,archWidth*2,material('#3d5653'));
+ const cap=new THREE.Mesh(new THREE.CircleGeometry(archWidth,20,0,Math.PI),new THREE.MeshBasicMaterial({color:'#3d5653'}));cap.rotation.y=-Math.PI/2;cap.position.set(faceX-.05,4.1,z);scene.add(cap);
+ const rimArch=new THREE.Mesh(new THREE.RingGeometry(archWidth,archWidth+.22,24,1,0,Math.PI),new THREE.MeshBasicMaterial({color:'#c6bdad',side:THREE.DoubleSide}));rimArch.rotation.y=-Math.PI/2;rimArch.position.set(faceX-.08,4.1,z);scene.add(rimArch);
+ box(faceX-.08,2.35,z-archWidth,.2,3.5,.22,cream);box(faceX-.08,2.35,z+archWidth,.2,3.5,.22,cream);
+}
+obstacles.push({x:hallX,z:hallZ,w:hallW,d:hallD,h:13});label('大禮堂',hallX,17,hallZ);
 // Gym facade uses the user's track-side panorama; its depth remains a simple 3D approximation.
 const texLoader=new THREE.TextureLoader();function photoMaterial(path){const texture=texLoader.load(path);texture.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshBasicMaterial({map:texture})}
 const gymX=-93,gymZ=-42;box(gymX,11.5,gymZ,39,23,53,material('#a96049'));box(gymX,23.4,gymZ,40,.8,54,material('#b8b9b2'));
@@ -72,20 +89,48 @@ for(const side of [-1,1]){const x=poolX+side*15.1;for(let z=poolZ-27;z<=poolZ+27
 box(poolX-19,5,poolZ-21,8,.8,14,material('#9d9d96'));box(poolX-22.5,2.5,poolZ-26,.8,5,2,material('#9d9d96'));
 obstacles.push({x:poolX,z:poolZ,w:30,d:58,h:17});label('泳健館',poolX,23,poolZ);
 
-// The four buildings on the opposite side of the field are arranged from
-// west to east using the university's campus map. Facades are approximate:
-// library, audiovisual hall and Duxing use crops from the supplied panoramas.
-plane(0,80,218,16,material('#a7aaa2'),-.005);
-function photoBuilding(name,x,z,w,d,h,path,baseColor){
-  box(x,h/2,z,w,h,d,material(baseColor));
-  box(x,h+.3,z,w+1,.6,d+1,material('#d0cbbf'));
-  const facade=new THREE.Mesh(new THREE.PlaneGeometry(w,h),photoMaterial(path));
-  facade.position.set(x,h/2,z-d/2-.06);facade.rotation.y=Math.PI;scene.add(facade);
-  obstacles.push({x,z,w,d,h});label(name,x,h+5,z);
+// Track-facing facades are approximate 3D structures, informed by the supplied
+// field panoramas and the campus tour. The spacing is adapted for flight.
+plane(0,80,355,16,material('#a7aaa2'),-.005);
+const campusBrick=texLoader.load('./assets/brick.jpg');campusBrick.colorSpace=THREE.SRGBColorSpace;campusBrick.wrapS=campusBrick.wrapT=THREE.RepeatWrapping;campusBrick.repeat.set(5,3);
+const facadeBrick=new THREE.MeshStandardMaterial({map:campusBrick,color:'#e7c7ba',roughness:.9}),facadeStone=material('#c7c5b9'),facadeWindow=material('#4c696e'),facadeFrame=material('#d3cabe'),facadeDoor=material('#334f50');
+const brickVariant=color=>new THREE.MeshStandardMaterial({map:campusBrick,color,roughness:.9});
+function frontage(name,x,z,w,d,h,floors,body=facadeBrick){
+ box(x,h/2,z,w,h,d,body);box(x,h+.3,z,w+1,.6,d+1,facadeStone);
+ const front=z-d/2-.12,cell=(w-4)/Math.floor((w-4)/5);
+ for(let floor=1;floor<floors;floor++){
+  let y=3+floor*(h-4)/floors;box(x,y-1.15,front,w,.32,.35,facadeFrame);
+  for(let wx=x-w/2+2+cell/2;wx<x+w/2-2;wx+=cell){
+   box(wx,y,front-.13,cell*.8,1.65,.18,facadeWindow);
+   box(wx,y,front-.24,.14,1.65,.1,facadeFrame);
+  }
+  for(const side of [-1,1])for(let wz=z-d/2+3;wz<z+d/2-2;wz+=5)box(x+side*(w/2+.12),y,wz,.2,1.65,3.8,facadeWindow);
+ }
+ obstacles.push({x,z,w,d,h});label(name,x,h+5,z);return front;
 }
-photoBuilding('視聽館',-62,107,36,25,20,'./assets/audiovisual-facade.jpg','#ac5e49');
-photoBuilding('圖書館',-17,108,41,25,28,'./assets/library-facade.jpg','#a35d4b');
-photoBuilding('篤行樓',45,109,42,27,33,'./assets/duxing-facade.jpg','#b46b55');
+function archedOpening(x,z,base,width,height,trim=facadeStone){
+ const r=width/2,mid=base+height-r;
+ box(x,base+(height-r)/2,z,width,height-r,.2,facadeDoor);
+ const cap=new THREE.Mesh(new THREE.CircleGeometry(r,24,0,Math.PI),new THREE.MeshBasicMaterial({color:'#334f50'}));cap.position.set(x,mid,z-.12);cap.rotation.y=Math.PI;scene.add(cap);
+ const arch=new THREE.Mesh(new THREE.RingGeometry(r,r+.25,24,1,0,Math.PI),new THREE.MeshBasicMaterial({color:trim.color,side:THREE.DoubleSide}));arch.position.set(x,mid,z-.15);arch.rotation.y=Math.PI;scene.add(arch);
+ box(x-r-.12,base+(height-r)/2,z-.15,.24,height-r,.22,trim);box(x+r+.12,base+(height-r)/2,z-.15,.24,height-r,.22,trim);
+}
+let scienceFront=frontage('科學館',-145,55,37,24,23,5,brickVariant('#e7aa97'));
+box(-145,4,scienceFront-.15,19,8,.35,material('#b96150'));
+for(const x of [-150,-145,-140])archedOpening(x,scienceFront-.45,0,x===-145?4.2:3.2,6,facadeStone);
+box(-145,8.4,scienceFront-.4,20,.55,.8,facadeStone);
+let audioFront=frontage('視聽館',-62,107,36,25,20,4,brickVariant('#efc2b2'));
+box(-62,3,audioFront-.25,14,6,.35,facadeStone);box(-62,2.7,audioFront-.5,8,5,.18,facadeDoor);
+for(const x of [-67,-62,-57])box(x,3,audioFront-.65,.35,6,.4,facadeFrame);
+function entrancePhoto(x,z,width,height,path){box(x,height/2,z,width,height,.45,facadeStone);const panel=new THREE.Mesh(new THREE.PlaneGeometry(width,height),photoMaterial(path));panel.rotation.y=Math.PI;panel.position.set(x,height/2,z-.26);scene.add(panel)}
+let libFront=frontage('圖書館',-17,108,41,25,28,6,brickVariant('#e5b5a6'));
+entrancePhoto(-17,libFront-.45,23,9,'./assets/library-entrance.jpg');
+box(-17,9.2,libFront-.55,24,.65,1,facadeStone);
+let duxingFront=frontage('篤行樓',45,109,42,27,30,6,brickVariant('#edc0b2'));
+entrancePhoto(45,duxingFront-.45,15,8,'./assets/duxing-entrance.jpg');
+let adminFront=frontage('行政大樓',99,108,40,25,30,6,brickVariant('#daa99d'));
+box(99,4.5,adminFront-.3,25,9,.65,facadeStone);archedOpening(99,adminFront-.7,0,15,7,facadeFrame);
+box(99,9.2,adminFront-.55,26,.6,1,facadeStone);
 
 // Student Center: approximate red-brick wings, cream horizontal bands,
 // paired entrance columns and a glazed tower, based on the public tour.
@@ -103,7 +148,8 @@ for(const x of [studentX-7,studentX+7]){const column=new THREE.Mesh(new THREE.Cy
 box(studentX+13,13,studentZ-studentD/2-.7,5,25,2,studentGlass);
 for(let y=3;y<25;y+=3)box(studentX+13,y,studentZ-studentD/2-1.8,5,.18,.2,lightConcrete);
 obstacles.push({x:studentX,z:studentZ,w:studentW,d:studentD,h:studentH});label('學生活動中心',studentX,30,studentZ);
-function tree(x,z,s=1){const trunk=material('#78654c'),leaves=material('#568354');const tr=new THREE.Mesh(new THREE.CylinderGeometry(.55,.75,5*s,7),trunk);tr.position.set(x,2.5*s,z);scene.add(tr);const cr=new THREE.Mesh(new THREE.SphereGeometry(3.5*s,10,7),leaves);cr.position.set(x,6*s,z);scene.add(cr)}
+const trunkMat=material('#78654c'),leafMats=[material('#568354'),material('#668f5b'),material('#4f7950')];
+function tree(x,z,s=1){const tr=new THREE.Mesh(new THREE.CylinderGeometry(.35,.6,6*s,7),trunkMat);tr.position.set(x,3*s,z);scene.add(tr);for(const [dx,dy,dz,r,i] of [[0,7,0,3,0],[-1.7,6.2,.3,2.1,1],[1.7,6.5,.2,2.2,2],[.2,8.2,-.5,2.2,1]]){const cr=new THREE.Mesh(new THREE.SphereGeometry(r*s,9,7),leafMats[i]);cr.position.set(x+dx*s,dy*s,z+dz*s);scene.add(cr)}}
 for(const [x,z] of [[-58,-75],[-59,-50],[-60,-22],[-60,50],[49,45],[49,22],[49,-6],[48,-32],[-85,69],[-45,78],[8,79],[32,81],[-110,10]])tree(x,z,.8+Math.random()*.3);
 // Landing marker, intentionally on the accessible side of the building.
 const target={x:48,z:-72,r:12};const ring=new THREE.Mesh(new THREE.RingGeometry(6.8,7.3,64),new THREE.MeshBasicMaterial({color:'#f7d782',side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(target.x,.15,target.z);scene.add(ring);
@@ -247,7 +293,7 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/10
    const blend=1-Math.exp(-5*dt);state.vx+=(vx-state.vx)*blend;state.vy+=(vy-state.vy)*blend;state.vz+=(vz-state.vz)*blend;
    let rawX=state.x+state.vx*dt,rawZ=state.z+state.vz*dt;
    const rawY=state.y+state.vy*dt;
-   let nx=THREE.MathUtils.clamp(rawX,indoorMode?-21:-115,indoorMode?21:112),nz=THREE.MathUtils.clamp(rawZ,indoorMode?-37:-115,indoorMode?37:155),ny=THREE.MathUtils.clamp(rawY,2,indoorMode?15.5:38);
+   let nx=THREE.MathUtils.clamp(rawX,indoorMode?-21:-175,indoorMode?21:165),nz=THREE.MathUtils.clamp(rawZ,indoorMode?-37:-115,indoorMode?37:155),ny=THREE.MathUtils.clamp(rawY,2,indoorMode?15.5:38);
    if((nx!==rawX||nz!==rawZ||(indoorMode&&ny!==rawY))&&now-lastToast>2000){toast(indoorMode?'已接近館內牆壁、地面或屋頂':'已到達本次練習範圍邊界');lastToast=now}
    if(indoorMode||!blocked(nx,ny,nz)){state.x=nx;state.z=nz;state.y=ny}else{state.vx=state.vz=0;if(now-lastToast>2000){toast('接近建築，請調整方向或高度');lastToast=now}}
  }
