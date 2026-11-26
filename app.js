@@ -1,4 +1,5 @@
 import * as THREE from './assets/three.module.js';
+import {defaultAxes, readPad, combineInputs} from './controls.mjs';
 
 const $ = id => document.getElementById(id);
 const scene = new THREE.Scene();
@@ -107,6 +108,8 @@ for(const [x,z] of [[-58,-75],[-59,-50],[-60,-22],[-60,50],[49,45],[49,22],[49,-
 // Landing marker, intentionally on the accessible side of the building.
 const target={x:48,z:-72,r:12};const ring=new THREE.Mesh(new THREE.RingGeometry(6.8,7.3,64),new THREE.MeshBasicMaterial({color:'#f7d782',side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(target.x,.15,target.z);scene.add(ring);
 const beacon=new THREE.Mesh(new THREE.TorusGeometry(2.7,.12,8,36),new THREE.MeshBasicMaterial({color:'#ffe69a'}));beacon.position.set(target.x,8,target.z);scene.add(beacon);label('泳健館入口',target.x,13,target.z);
+const gymTarget={x:-64,z:-42,r:10};const gymRing=new THREE.Mesh(new THREE.RingGeometry(5.5,6,64),new THREE.MeshBasicMaterial({color:'#f7d782',side:THREE.DoubleSide}));gymRing.rotation.x=-Math.PI/2;gymRing.position.set(gymTarget.x,.16,gymTarget.z);scene.add(gymRing);
+const gymBeacon=new THREE.Mesh(new THREE.TorusGeometry(2.7,.12,8,36),new THREE.MeshBasicMaterial({color:'#ffe69a'}));gymBeacon.position.set(gymTarget.x,8,gymTarget.z);scene.add(gymBeacon);label('體育館入口',gymTarget.x,13,gymTarget.z);
 const drone=new THREE.Group();scene.add(drone);
 const bodyMat=material('#e6ede2'), darkMat=material('#223e43'), propMat=material('#273b41');
 box(0,0,0,3.3,.8,3.5,bodyMat,drone);box(0,-.15,-1.3,1.2,.55,.7,darkMat,drone);
@@ -145,11 +148,71 @@ box(0,8.5,-40.5,39,6,.12,material('#ba6b50'),indoor);box(0,6,-40.3,10,5,.15,glas
 const rim=material('#e4e1d2');for(const x of [-11.3,11.3])box(x,.12,0,.65,.18,53,rim,indoor);for(const z of [-26.3,26.3])box(0,.12,z,23,.18,.65,rim,indoor);
 for(let x=-9.2;x<=9.3;x+=3.7){box(x,.55,27,2,1.1,1.5,frameMat,indoor);box(x,1.15,27,2.1,.16,1.6,laneBlue,indoor)}
 for(const x of [-12,12]){for(const z of [-18,18]){box(x,.65,z,.12,1.3,.12,frameMat,indoor);box(x,.65,z+1.3,.12,1.3,.12,frameMat,indoor);box(x,1.28,z+.65,.12,.12,1.4,frameMat,indoor)}}
+// Gymnasium: an open flying space inspired by the supplied indoor panorama.
+const gymIndoor=new THREE.Scene();gymIndoor.background=new THREE.Color('#bed2d6');
+gymIndoor.add(new THREE.HemisphereLight('#f9f6df','#7b7566',2.2));
+const gymLight=new THREE.DirectionalLight('#fff1db',1.1);gymLight.position.set(5,28,10);gymIndoor.add(gymLight);
+const courtCanvas=document.createElement('canvas');courtCanvas.width=1024;courtCanvas.height=1536;const gc=courtCanvas.getContext('2d');
+gc.fillStyle='#c78e58';gc.fillRect(0,0,1024,1536);
+for(let x=0;x<1024;x+=15){gc.fillStyle=x%30?'#e5b87e':'#d7a46d';gc.fillRect(x,0,14,1536);gc.fillStyle='#9e704b66';for(let y=(x%4)*25;y<1536;y+=100)gc.fillRect(x,y,14,1)}
+gc.strokeStyle='#faf5dd';gc.lineWidth=5;gc.strokeRect(78,135,868,1266);gc.beginPath();gc.moveTo(78,768);gc.lineTo(946,768);gc.arc(512,768,105,0,Math.PI*2);gc.stroke();
+gc.strokeStyle='#174f91';gc.lineWidth=5;for(const y of [165,770,1370]){gc.strokeRect(230,y-110,564,220);gc.beginPath();gc.arc(512,y,175,0,Math.PI*2);gc.stroke()}
+gc.strokeStyle='#9d493f';gc.beginPath();gc.arc(512,768,150,0,Math.PI*2);gc.stroke();
+const courtTex=new THREE.CanvasTexture(courtCanvas);courtTex.colorSpace=THREE.SRGBColorSpace;
+box(0,-.3,0,50,.5,82,new THREE.MeshStandardMaterial({map:courtTex,roughness:.67}),gymIndoor);
+const gymWall=material('#d9cbb0'),gymSteel=material('#4c4b46'),gymBlue=material('#344d69'),gymWindow=material('#d6e3df',{roughness:.4});
+box(-25,9,0,.8,18,82,gymWall,gymIndoor);box(25,9,0,.8,18,82,gymWall,gymIndoor);box(0,9,-41,50,18,.8,gymWall,gymIndoor);box(0,9,41,50,18,.8,gymWall,gymIndoor);
+box(0,18.3,0,50,.6,82,gymSteel,gymIndoor);
+for(const side of [-1,1]){
+ for(let z=-35;z<=35;z+=10){
+  box(side*24.45,12.7,z,.18,4.3,7.5,gymWindow,gymIndoor);
+  box(side*24.28,9,z-4.5,.65,18,.7,gymWall,gymIndoor);
+  for(let k=-2.5;k<=2.5;k+=2.5)box(side*24.25,12.7,z+k,.25,4.3,.16,gymSteel,gymIndoor);
+  box(side*24.25,3,z,.25,3.8,6.5,gymBlue,gymIndoor);
+ }
+ for(let step=0;step<3;step++)box(side*(23-step*.65),7.5+step*.58,0,1.3,.45,76,material('#677078'),gymIndoor);
+ box(side*21.4,8.5,0,.12,.13,77,frameMat,gymIndoor);
+ for(let z=-37;z<40;z+=4)box(side*21.4,8,z,.12,1.1,.12,frameMat,gymIndoor);
+}
+for(let z=-36;z<=36;z+=6){box(0,17.5,z,49,.35,.45,gymSteel,gymIndoor);for(let x=-18;x<=18;x+=9)box(x,17.1,z,2.5,.14,1,material('#f5ead0'),gymIndoor)}
+for(const z of [-32,32]){box(0,6,z,7,4,.18,material('#e9eddf'),gymIndoor);box(0,4.25,z+(z<0?1:-1),3.5,.15,.3,material('#b85b43'),gymIndoor)}
+// Scene-specific bounds keep the drone and follow camera inside the hall.
 // Scene-specific bounds keep the drone and follow camera inside the hall.
 const indoorStart={x:0,y:4.5,z:23,yaw:0};
+const gymStart={x:0,y:5,z:22,yaw:0};
 const start={x:0,y:5,z:38,yaw:0};const state={...start,vx:0,vy:0,vz:0,view:'chase',paused:true,pano:false,world:'outdoor'};
 let outdoorPosition=null;
 const sticks={left:{x:0,y:0},right:{x:0,y:0}};let lastToast=0,toastTimer;
+const keys=new Set(),padConfig={enabled:false,axes:[...defaultAxes],reverse:[false,false,false,false]};let padReady=false,padIdentity=null,lastAxisUpdate=0,padButtons=[false,false];
+const axisNames=['左水平（旋轉）','左垂直（升降）','右水平（平移）','右垂直（前後）'];
+axisNames.forEach((name,index)=>{
+ const row=document.createElement('label');row.className='axis-row';
+ const title=document.createElement('span');title.textContent=name;row.appendChild(title);
+ const select=document.createElement('select');select.setAttribute('aria-label',name+'軸');
+ for(let i=0;i<8;i++){const option=document.createElement('option');option.value=String(i);option.textContent='軸 '+(i+1);select.appendChild(option)}
+ select.value=String(index);select.addEventListener('change',()=>{padConfig.axes[index]=Number(select.value);padReady=false});row.appendChild(select);
+ const reverse=document.createElement('input');reverse.type='checkbox';reverse.setAttribute('aria-label',name+'反轉');reverse.addEventListener('change',()=>{padConfig.reverse[index]=reverse.checked;padReady=false});row.appendChild(reverse);
+ const reverseLabel=document.createElement('span');reverseLabel.textContent='反轉';row.appendChild(reverseLabel);$('axisSettings').appendChild(row);
+});
+$('gamepadEnable').addEventListener('change',event=>{padConfig.enabled=event.target.checked;padReady=false});
+function keyboardValues(){const down=key=>keys.has(key)?1:0;return {left:{x:down('KeyD')-down('KeyA'),y:down('KeyS')-down('KeyW')},right:{x:down('ArrowRight')-down('ArrowLeft'),y:down('ArrowDown')-down('ArrowUp')}}}
+const controlKeys=new Set(['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight']);
+window.addEventListener('keydown',event=>{if(!controlKeys.has(event.code)||state.paused||state.pano||event.target instanceof HTMLInputElement||event.target instanceof HTMLSelectElement||event.target instanceof HTMLTextAreaElement)return;event.preventDefault();keys.add(event.code)});
+window.addEventListener('keyup',event=>{if(controlKeys.has(event.code)){keys.delete(event.code);if(!state.paused&&!state.pano)event.preventDefault()}});
+function padValues(){let pad=null;try{pad=Array.from(navigator.getGamepads?.()||[]).find(p=>p&&p.connected&&p.axes.length>=4)||null}catch{}
+ const identity=pad?pad.index+':'+pad.id:null;if(identity!==padIdentity){padIdentity=identity;padReady=false;padButtons=[false,false]}
+ if(performance.now()-lastAxisUpdate>150){const axisText=pad?pad.axes.slice(0,8).map((v,i)=>'軸 '+(i+1)+'：'+(Number.isFinite(v)?v.toFixed(2):'—')).join('　'):'尚無軸資料';if($('gamepadAxes').textContent!==axisText)$('gamepadAxes').textContent=axisText;lastAxisUpdate=performance.now()}
+ const focused=document.hasFocus();const wasReady=padReady;const result=readPad(pad,padConfig,padReady,focused&&!state.paused&&!state.pano);padReady=result.ready;
+ if(!wasReady&&padReady)toast('手把已就緒，可開始飛行');else if(wasReady&&!padReady&&!state.paused&&!state.pano)toast('手把已中斷，請檢查連線與設定');
+ if($('gamepadStatus').textContent!==result.status)$('gamepadStatus').textContent=result.status;
+ const buttons=pad&&pad.mapping==='standard'&&padConfig.enabled?[!!pad.buttons[0]?.pressed,!!pad.buttons[1]?.pressed]:[false,false];
+ const a=buttons[0]&&!padButtons[0],b=buttons[1]&&!padButtons[1];padButtons=buttons;
+ let action=false;
+ if(focused&&a&&state.paused&&!state.pano){$('startButton').click();action=true}
+ else if(focused&&a&&padReady&&!state.pano&&!$('visitButton').classList.contains('hidden')){$('visitButton').click();action=true}
+ else if(focused&&b&&state.pano){$('closePano').click();action=true}
+ else if(focused&&b&&padReady&&state.world!=='outdoor'){$('outdoorButton').click();action=true}
+ return action?{left:{x:0,y:0},right:{x:0,y:0}}:result.values}
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2200)}
 function setupStick(id,value){const el=$(id),knob=el.querySelector('.knob');let active=null;
   const update=e=>{const r=el.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),max=r.width*.31,dist=Math.hypot(dx,dy),k=dist>max?max/dist:1;value.x=dx*k/max;value.y=dy*k/max;knob.style.transform=`translate(calc(-50% + ${dx*k}px),calc(-50% + ${dy*k}px))`};
@@ -158,26 +221,28 @@ function setupStick(id,value){const el=$(id),knob=el.querySelector('.knob');let 
   el.addEventListener('pointermove',e=>{if(e.pointerId===active){e.preventDefault();update(e)}});
   el.addEventListener('pointerup',release);el.addEventListener('pointercancel',release);el.addEventListener('lostpointercapture',release);return release}
 const releaseLeft=setupStick('leftStick',sticks.left),releaseRight=setupStick('rightStick',sticks.right);
-function clearControls(){releaseLeft();releaseRight();state.vx=state.vy=state.vz=0}
-function reset(){const home=state.world==='indoor'?indoorStart:start;Object.assign(state,home,{vx:0,vy:0,vz:0});clearControls();camera.position.set(home.x,home.y+5,home.z+5);toast(state.world==='indoor'?'已回到泳健館起飛點':'已回到操場起飛點')}
+function clearControls(){releaseLeft();releaseRight();keys.clear();padReady=false;state.vx=state.vy=state.vz=0}
+function reset(){const home=state.world==='indoor'?indoorStart:state.world==='gym'?gymStart:start;Object.assign(state,home,{vx:0,vy:0,vz:0});clearControls();camera.position.set(home.x,home.y+5,home.z+5);toast(state.world==='indoor'?'已回到泳健館起飛點':state.world==='gym'?'已回到體育館起飛點':'已回到操場起飛點')}
 $('resetButton').onclick=reset;
 $('viewButton').onclick=()=>{state.view=state.view==='chase'?'fpv':'chase';$('viewButton').textContent=state.view==='chase'?'第一人稱':'第三人稱';toast(state.view==='chase'?'第三人稱視角':'第一人稱視角')};
 $('startButton').onclick=()=>{$('overlay').classList.add('hidden');state.paused=false};
 $('helpButton').onclick=()=>{clearControls();state.paused=true;$('overlay').classList.remove('hidden');$('startButton').textContent='繼續練習'};
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearControls();state.paused=true;$('overlay').classList.remove('hidden');$('startButton').textContent='繼續練習'}});
+window.addEventListener('blur',()=>{if(!state.paused&&!state.pano){clearControls();state.paused=true;$('overlay').classList.remove('hidden');$('startButton').textContent='繼續練習'}});
 function blocked(x,y,z){return obstacles.some(b=>y<b.h+1.5&&Math.abs(x-b.x)<b.w/2+1.5&&Math.abs(z-b.z)<b.d/2+1.5)}
 const map=$('map').getContext('2d');
 function drawMap(){map.clearRect(0,0,200,190);map.fillStyle='#3b655e';map.fillRect(0,0,200,190);
- if(state.world==='indoor'){map.fillStyle='#d0d9cc';map.fillRect(42,12,116,166);map.fillStyle='#428fb0';map.fillRect(75,42,50,106);map.strokeStyle='#dbf2f5';for(let x=83;x<125;x+=8){map.beginPath();map.moveTo(x,42);map.lineTo(x,148);map.stroke()}let x=100+state.x*2.2,z=95+state.z*2;map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore();return}
+ if(state.world!=='outdoor'){map.fillStyle='#d0d9cc';map.fillRect(42,12,116,166);map.fillStyle=state.world==='gym'?'#c88f5b':'#428fb0';map.fillRect(75,42,50,106);map.strokeStyle='#dbf2f5';if(state.world==='indoor'){for(let x=83;x<125;x+=8){map.beginPath();map.moveTo(x,42);map.lineTo(x,148);map.stroke()}}else{map.strokeRect(80,47,40,96);map.beginPath();map.moveTo(80,95);map.lineTo(120,95);map.arc(100,95,9,0,Math.PI*2);map.stroke()}let x=100+state.x*2.2,z=95+state.z*2;map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore();return}
  const scale=.57,p=(x,z)=>[100+x*scale,84+z*scale];
   let [fx,fz]=p(-8,0);map.fillStyle='#bd755d';map.beginPath();map.roundRect(fx-24,fz-38,48,76,24);map.fill();map.fillStyle='#87a670';map.beginPath();map.roundRect(fx-17,fz-31,34,62,17);map.fill();
   map.fillStyle='#a9b9a4';for(const b of obstacles){let[x,z]=p(b.x,b.z);map.fillRect(x-b.w*scale/2,z-b.d*scale/2,b.w*scale,b.d*scale)}
-  let [tx,tz]=p(target.x,target.z);map.fillStyle='#ffcd79';map.beginPath();map.arc(tx,tz,5,0,7);map.fill();let [x,z]=p(state.x,state.z);map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore()}
+  for(const point of [target,gymTarget]){let [tx,tz]=p(point.x,point.z);map.fillStyle='#ffcd79';map.beginPath();map.arc(tx,tz,5,0,7);map.fill()}let [x,z]=p(state.x,state.z);map.save();map.translate(x,z);map.rotate(state.yaw);map.fillStyle='white';map.beginPath();map.moveTo(0,-8);map.lineTo(5,6);map.lineTo(0,4);map.lineTo(-5,6);map.closePath();map.fill();map.restore()}
 let last=performance.now();const look=new THREE.Vector3(),cameraGoal=new THREE.Vector3();
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;
- if(!state.paused&&!state.pano){state.yaw+=sticks.left.x*1.1*dt;
-   const indoorMode=state.world==='indoor',moveSpeed=indoorMode?4.5:8;
-   const f=-sticks.right.y*moveSpeed,s=sticks.right.x*moveSpeed,vy=-sticks.left.y*(indoorMode?3:4.5);
+ const controls=combineInputs(sticks,keyboardValues(),padValues());
+ if(!state.paused&&!state.pano){state.yaw+=controls.left.x*1.1*dt;
+   const indoorMode=state.world!=='outdoor',moveSpeed=indoorMode?4.5:8;
+   const f=-controls.right.y*moveSpeed,s=controls.right.x*moveSpeed,vy=-controls.left.y*(indoorMode?3:4.5);
    const vx=Math.sin(state.yaw)*f+Math.cos(state.yaw)*s,vz=-Math.cos(state.yaw)*f+Math.sin(state.yaw)*s;
    const blend=1-Math.exp(-5*dt);state.vx+=(vx-state.vx)*blend;state.vy+=(vy-state.vy)*blend;state.vz+=(vz-state.vz)*blend;
    let rawX=state.x+state.vx*dt,rawZ=state.z+state.vz*dt;
@@ -188,23 +253,29 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/10
  }
  drone.position.set(state.x,state.y,state.z);drone.rotation.y=-state.yaw;drone.visible=state.view==='chase';
  const forward=new THREE.Vector3(Math.sin(state.yaw),0,-Math.cos(state.yaw));
- if(state.view==='chase'){const indoors=state.world==='indoor';cameraGoal.set(state.x-forward.x*13,state.y+(indoors?7:5.5),state.z-forward.z*13);look.set(state.x+forward.x*8,state.y+(indoors?0:4.5),state.z+forward.z*8)}else{cameraGoal.set(state.x+forward.x*1.7,state.y+.6,state.z+forward.z*1.7);look.set(state.x+forward.x*30,state.y-1,state.z+forward.z*30)}
- if(state.world==='indoor'){cameraGoal.x=THREE.MathUtils.clamp(cameraGoal.x,-23,23);cameraGoal.y=THREE.MathUtils.clamp(cameraGoal.y,1.5,17);cameraGoal.z=THREE.MathUtils.clamp(cameraGoal.z,-39,39)}
- camera.position.lerp(cameraGoal,1-Math.exp(-5*dt));camera.lookAt(look);for(const tag of labels){const width=THREE.MathUtils.clamp(camera.position.distanceTo(tag.position)*.15,3,20);tag.scale.set(width,width/4,1)}renderer.render(state.world==='indoor'?indoor:scene,camera);
- const near=state.world==='outdoor'&&Math.hypot(state.x-target.x,state.z-target.z)<target.r; $('visitButton').classList.toggle('hidden',!near||state.pano||state.paused);$('missionText').textContent=state.world==='indoor'?'泳健館室內飛行練習':near?'已抵達泳健館入口':'從操場飛向泳健館';
+ if(state.view==='chase'){const indoors=state.world!=='outdoor';cameraGoal.set(state.x-forward.x*13,state.y+(indoors?7:5.5),state.z-forward.z*13);look.set(state.x+forward.x*8,state.y+(indoors?0:4.5),state.z+forward.z*8)}else{cameraGoal.set(state.x+forward.x*1.7,state.y+.6,state.z+forward.z*1.7);look.set(state.x+forward.x*30,state.y-1,state.z+forward.z*30)}
+ if(state.world!=='outdoor'){cameraGoal.x=THREE.MathUtils.clamp(cameraGoal.x,-23,23);cameraGoal.y=THREE.MathUtils.clamp(cameraGoal.y,1.5,17);cameraGoal.z=THREE.MathUtils.clamp(cameraGoal.z,-39,39)}
+ camera.position.lerp(cameraGoal,1-Math.exp(-5*dt));camera.lookAt(look);for(const tag of labels){const width=THREE.MathUtils.clamp(camera.position.distanceTo(tag.position)*.15,3,20);tag.scale.set(width,width/4,1)}renderer.render(state.world==='indoor'?indoor:state.world==='gym'?gymIndoor:scene,camera);
+ const nearPool=state.world==='outdoor'&&Math.hypot(state.x-target.x,state.z-target.z)<target.r,nearGym=state.world==='outdoor'&&Math.hypot(state.x-gymTarget.x,state.z-gymTarget.z)<gymTarget.r;
+ $('visitButton').classList.toggle('hidden',!(nearPool||nearGym)||state.pano||state.paused);$('visitButton').textContent=nearGym?'進入體育館飛行練習':'進入泳健館飛行練習';
+ $('missionText').textContent=state.world==='indoor'?'泳健館室內飛行練習':state.world==='gym'?'體育館室內飛行練習':nearGym?'已抵達體育館入口':nearPool?'已抵達泳健館入口':'探索操場與館舍';
  $('altitude').textContent=state.y.toFixed(1);$('speed').textContent=Math.hypot(state.vx,state.vy,state.vz).toFixed(1);$('heading').textContent=String(Math.round(((state.yaw*180/Math.PI)%360+360)%360)).padStart(3,'0');drawMap();
 }
 camera.position.set(0,13,54);requestAnimationFrame(frame);
 
 // A separate renderer is created lazily so the high-resolution panorama is loaded only on demand.
-let panoRenderer,panoCamera,panoScene,panoTexture,panoYaw=0,panoPitch=0,panoDrag=null,panoRenderId;
+let panoRenderer,panoCamera,panoScene,panoSphere,panoYaw=0,panoPitch=0,panoDrag=null,panoRenderId;const panoTextures={};
 function panoDraw(){if(!state.pano)return;const lat=THREE.MathUtils.degToRad(panoPitch),lon=THREE.MathUtils.degToRad(panoYaw);panoCamera.lookAt(Math.cos(lat)*Math.sin(lon),Math.sin(lat),-Math.cos(lat)*Math.cos(lon));panoRenderer.render(panoScene,panoCamera);panoRenderId=requestAnimationFrame(panoDraw)}
-function openPano(){clearControls();state.pano=true;$('panorama').classList.remove('hidden');$('panoStatus').textContent='實景載入中…';$('panoStatus').classList.remove('hidden');
+function openPano(){clearControls();state.pano=true;const world=state.world;const gym=world==='gym';$('panoTitle').textContent=gym?'體育館 · 室內球場':'泳健館 · 室內泳池';$('panorama').setAttribute('aria-label',gym?'體育館 360 度實景':'泳健館 360 度實景');$('panorama').classList.remove('hidden');$('panoStatus').textContent='實景載入中…';$('panoStatus').classList.remove('hidden');
  if(!panoRenderer){panoRenderer=new THREE.WebGLRenderer({antialias:true});panoRenderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));panoRenderer.outputColorSpace=THREE.SRGBColorSpace;panoRenderer.setSize(innerWidth,innerHeight);$('panoScene').appendChild(panoRenderer.domElement);panoScene=new THREE.Scene();panoCamera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,100);const sphere=new THREE.SphereGeometry(50,60,40);sphere.scale(-1,1,1);
-  new THREE.TextureLoader().load('./assets/pool.jpg',texture=>{panoTexture=texture;texture.colorSpace=THREE.SRGBColorSpace;const max=panoRenderer.capabilities.maxTextureSize;if(texture.image.width>max){const c=document.createElement('canvas');c.width=max;c.height=Math.floor(max/2);c.getContext('2d').drawImage(texture.image,0,0,c.width,c.height);texture.image=c;texture.needsUpdate=true}panoScene.add(new THREE.Mesh(sphere,new THREE.MeshBasicMaterial({map:texture})));$('panoStatus').classList.add('hidden')},undefined,()=>{$('panoStatus').textContent='實景載入失敗，請返回後再試。'});
- }else if(panoTexture)$('panoStatus').classList.add('hidden');panoDraw()}
-function enterIndoor(){outdoorPosition={x:state.x,y:state.y,z:state.z,yaw:state.yaw};clearControls();Object.assign(state,indoorStart,{world:'indoor'});indoor.add(drone);camera.position.set(0,9.5,36);$('indoorActions').classList.remove('hidden');$('mapLabel').textContent='泳健館示意圖';$('targetLegend').classList.add('hidden');toast('進入泳健館，請避開牆壁及屋頂')}
-function returnOutdoor(){clearControls();Object.assign(state,outdoorPosition||start,{world:'outdoor'});scene.add(drone);camera.position.set(state.x,state.y+5,state.z+8);$('indoorActions').classList.add('hidden');$('mapLabel').textContent='校園示意圖';$('targetLegend').classList.remove('hidden');toast('已返回泳健館戶外')}
+  panoSphere=new THREE.Mesh(sphere,new THREE.MeshBasicMaterial({color:'#122c34'}));panoScene.add(panoSphere);
+ }
+ const show=texture=>{if(!state.pano||state.world!==world)return;panoSphere.material.map=texture;panoSphere.material.color.set('#ffffff');panoSphere.material.needsUpdate=true;$('panoStatus').classList.add('hidden')};
+ if(panoTextures[world])show(panoTextures[world]);else{panoSphere.material.map=null;panoSphere.material.color.set('#122c34');panoSphere.material.needsUpdate=true;
+  new THREE.TextureLoader().load(gym?'./assets/gym-pano.jpg':'./assets/pool.jpg',texture=>{texture.colorSpace=THREE.SRGBColorSpace;const max=panoRenderer.capabilities.maxTextureSize;if(texture.image.width>max){const c=document.createElement('canvas');c.width=max;c.height=Math.floor(max/2);c.getContext('2d').drawImage(texture.image,0,0,c.width,c.height);texture.image=c;texture.needsUpdate=true}panoTextures[world]=texture;show(texture)},undefined,()=>{if(state.pano&&state.world===world)$('panoStatus').textContent='實景載入失敗，請返回後再試。'});
+ }panoDraw()}
+function enterIndoor(){const gym=Math.hypot(state.x-gymTarget.x,state.z-gymTarget.z)<gymTarget.r;outdoorPosition={x:state.x,y:state.y,z:state.z,yaw:state.yaw};clearControls();Object.assign(state,gym?gymStart:indoorStart,{world:gym?'gym':'indoor'});(gym?gymIndoor:indoor).add(drone);camera.position.set(0,9.5,36);$('indoorActions').classList.remove('hidden');$('mapLabel').textContent=gym?'體育館示意圖':'泳健館示意圖';$('targetLegend').classList.add('hidden');toast(gym?'進入體育館，請避開牆壁及屋頂':'進入泳健館，請避開牆壁及屋頂')}
+function returnOutdoor(){const gym=state.world==='gym';clearControls();Object.assign(state,outdoorPosition||start,{world:'outdoor'});scene.add(drone);camera.position.set(state.x,state.y+5,state.z+8);$('indoorActions').classList.add('hidden');$('mapLabel').textContent='校園示意圖';$('targetLegend').classList.remove('hidden');toast(gym?'已返回體育館戶外':'已返回泳健館戶外')}
 $('visitButton').onclick=enterIndoor;$('panoButton').onclick=openPano;$('outdoorButton').onclick=returnOutdoor;
 $('closePano').onclick=()=>{state.pano=false;cancelAnimationFrame(panoRenderId);$('panorama').classList.add('hidden');toast('已返回飛行畫面')};
 const panoEl=$('panoScene');panoEl.style.touchAction='none';panoEl.addEventListener('pointerdown',e=>{if(panoDrag)return;panoDrag={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:panoYaw,pitch:panoPitch};panoEl.setPointerCapture(e.pointerId)});panoEl.addEventListener('pointermove',e=>{if(!panoDrag||e.pointerId!==panoDrag.id)return;panoYaw=panoDrag.yaw-(e.clientX-panoDrag.x)*.18;panoPitch=THREE.MathUtils.clamp(panoDrag.pitch+(e.clientY-panoDrag.y)*.18,-85,85)});function endPano(e){if(panoDrag&&e.pointerId===panoDrag.id)panoDrag=null}panoEl.addEventListener('pointerup',endPano);panoEl.addEventListener('pointercancel',endPano);panoEl.addEventListener('lostpointercapture',endPano);
