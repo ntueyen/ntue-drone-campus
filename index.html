@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#152c32">
+  <title>北教大校園飛行練習</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main id="app" aria-label="北教大校園飛行練習">
+    <div id="scene" aria-label="校園飛行畫面"></div>
+    <div class="topbar">
+      <div class="brand"><span class="brand-mark">N</span><span><strong>校園飛行練習</strong><small>國立臺北教育大學 · 原型</small></span></div>
+      <div class="top-actions">
+        <button id="viewButton" type="button">第一人稱</button>
+        <button id="resetButton" type="button">重新起飛</button>
+        <button id="helpButton" class="icon-button" type="button" aria-label="操作說明">?</button>
+      </div>
+    </div>
+    <div class="mission"><span class="mission-icon">◎</span><span><small>練習目標</small><strong id="missionText">從操場飛向泳健館</strong></span></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div class="hud"><div><small>高度</small><strong><span id="altitude">0.0</span><em> m</em></strong></div><i></i><div><small>速度</small><strong><span id="speed">0.0</span><em> m/s</em></strong></div><i></i><div><small>航向</small><strong><span id="heading">000</span><em>°</em></strong></div></div>
+    <div class="map-card"><div class="map-title">校園示意圖 <span>北 ↑</span></div><canvas id="map" width="200" height="190" aria-label="校園示意圖"></canvas><div class="map-legend"><span class="dot drone-dot"></span>目前位置 <span class="dot target-dot"></span>泳健館</div></div>
+    <div class="controls">
+      <div class="control-block"><div class="stick-label"><b>左搖桿</b><span>升降 · 轉向</span></div><div id="leftStick" class="stick" aria-label="左搖桿：上下升降、左右旋轉" role="application"><span class="cross x"></span><span class="cross y"></span><span class="knob"></span></div><div class="stick-caption">上下升降　左右旋轉</div></div>
+      <div class="control-block right"><div class="stick-label"><b>右搖桿</b><span>前後 · 平移</span></div><div id="rightStick" class="stick" aria-label="右搖桿：上下前後、左右平移" role="application"><span class="cross x"></span><span class="cross y"></span><span class="knob"></span></div><div class="stick-caption">上下前後　左右平移</div></div>
+    </div>
+    <button id="visitButton" class="visit hidden" type="button">進入泳健館 360° 實景 <span>↗</span></button>
+    <div id="overlay" class="overlay">
+      <section class="welcome" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+        <div class="eyebrow"><span></span> FLIGHT PRACTICE · 入門模式</div>
+        <h1 id="welcomeTitle">從操場起飛，<br>探索北教大。</h1>
+        <p>使用雙手操控虛擬搖桿，在校園上空練習飛行，前往泳健館體驗 360° 實景。</p>
+        <div class="guide"><div><b>左手</b><span>上下升降 · 左右旋轉</span></div><div><b>右手</b><span>前進後退 · 左右平移</span></div></div>
+        <button id="startButton" class="primary" type="button">開始練習</button>
+        <small class="disclaimer">建議使用平板橫向操作。校園建築為簡化示意，數值僅供操作練習。</small>
+      </section>
+    </div>
+    <div id="panorama" class="pano hidden" aria-label="泳健館 360 度實景">
+      <div id="panoScene"></div><div class="pano-header"><div><small>360° 實景參觀</small><strong>泳健館 · 室內泳池</strong></div><button id="closePano" type="button">返回飛行</button></div><div id="panoHint" class="pano-hint">手指拖曳畫面，即可環顧四周</div><div id="panoStatus" class="pano-status">實景載入中…</div>
+    </div>
+    <div class="rotate-hint">請將平板橫向放置，以獲得較好的飛行視野。</div>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
