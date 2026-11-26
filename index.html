@@ -21,17 +21,18 @@
     <div class="mission"><span class="mission-icon">◎</span><span><small>練習目標</small><strong id="missionText">從操場飛向泳健館</strong></span></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div class="hud"><div><small>高度</small><strong><span id="altitude">0.0</span><em> m</em></strong></div><i></i><div><small>速度</small><strong><span id="speed">0.0</span><em> m/s</em></strong></div><i></i><div><small>航向</small><strong><span id="heading">000</span><em>°</em></strong></div></div>
-    <div class="map-card"><div class="map-title">校園示意圖 <span>北 ↑</span></div><canvas id="map" width="200" height="190" aria-label="校園示意圖"></canvas><div class="map-legend"><span class="dot drone-dot"></span>目前位置 <span class="dot target-dot"></span>泳健館</div></div>
+    <div class="map-card"><div class="map-title"><span id="mapLabel">校園示意圖</span><span>北 ↑</span></div><canvas id="map" width="200" height="190" aria-label="位置示意圖"></canvas><div class="map-legend"><span class="dot drone-dot"></span>目前位置 <span id="targetLegend"><span class="dot target-dot"></span>泳健館</span></div></div>
     <div class="controls">
       <div class="control-block"><div class="stick-label"><b>左搖桿</b><span>升降 · 轉向</span></div><div id="leftStick" class="stick" aria-label="左搖桿：上下升降、左右旋轉" role="application"><span class="cross x"></span><span class="cross y"></span><span class="knob"></span></div><div class="stick-caption">上下升降　左右旋轉</div></div>
       <div class="control-block right"><div class="stick-label"><b>右搖桿</b><span>前後 · 平移</span></div><div id="rightStick" class="stick" aria-label="右搖桿：上下前後、左右平移" role="application"><span class="cross x"></span><span class="cross y"></span><span class="knob"></span></div><div class="stick-caption">上下前後　左右平移</div></div>
     </div>
-    <button id="visitButton" class="visit hidden" type="button">進入泳健館 360° 實景 <span>↗</span></button>
+    <button id="visitButton" class="visit hidden" type="button">進入泳健館飛行練習</button>
+    <div id="indoorActions" class="indoor-actions hidden"><button id="panoButton" type="button">觀看 360° 實景</button><button id="outdoorButton" type="button">返回戶外</button></div>
     <div id="overlay" class="overlay">
       <section class="welcome" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
         <div class="eyebrow"><span></span> FLIGHT PRACTICE · 入門模式</div>
         <h1 id="welcomeTitle">從操場起飛，<br>探索北教大。</h1>
-        <p>使用雙手操控虛擬搖桿，在校園上空練習飛行，前往泳健館體驗 360° 實景。</p>
+        <p>使用雙手操控虛擬搖桿，在校園上空練習飛行，前往泳健館繼續室內飛行或參觀 360° 實景。</p>
         <div class="guide"><div><b>左手</b><span>上下升降 · 左右旋轉</span></div><div><b>右手</b><span>前進後退 · 左右平移</span></div></div>
         <button id="startButton" class="primary" type="button">開始練習</button>
         <small class="disclaimer">建議使用平板橫向操作。校園建築為簡化示意，數值僅供操作練習。</small>
